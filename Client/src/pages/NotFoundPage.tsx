@@ -1,0 +1,13 @@
+import { Link } from 'react-router-dom'
+
+const NotFoundPage = () => {
+  return (
+    <div style={{ textAlign: 'center', padding: '4rem' }}>
+      <h1>404</h1>
+      <p>Trang không tồn tại</p>
+      <Link to="/">Về trang chủ</Link>
+    </div>
+  )
+}
+
+export default NotFoundPage
