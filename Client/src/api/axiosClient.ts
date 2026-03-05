@@ -1,29 +1,56 @@
 import axios from 'axios'
 
 const axiosClient = axios.create({
-  baseURL: '/api',
+  baseURL: '/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // Gửi cookie (JWT) theo mỗi request
 })
 
-// Request interceptor
+// Request interceptor — attach access token
 axiosClient.interceptors.request.use(
   (config) => {
+    const token = localStorage.getItem('accessToken')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
     return config
   },
   (error) => Promise.reject(error)
 )
 
-// Response interceptor
+// Response interceptor — handle 401 with token refresh
 axiosClient.interceptors.response.use(
-  (response) => response.data,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Redirect đến trang login khi token hết hạn
-      window.location.href = '/login'
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true
+      const refreshToken = localStorage.getItem('refreshToken')
+
+      if (refreshToken) {
+        try {
+          const res = await axios.post('/api/v1/auth/refresh', { refreshToken })
+          const { accessToken, refreshToken: newRefreshToken } = res.data
+
+          localStorage.setItem('accessToken', accessToken)
+          localStorage.setItem('refreshToken', newRefreshToken)
+
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`
+          return axiosClient(originalRequest)
+        } catch {
+          // Refresh failed — clear tokens and redirect to login
+          localStorage.removeItem('accessToken')
+          localStorage.removeItem('refreshToken')
+          localStorage.removeItem('user')
+          window.location.href = '/login'
+        }
+      } else {
+        window.location.href = '/login'
+      }
     }
+
     return Promise.reject(error)
   }
 )

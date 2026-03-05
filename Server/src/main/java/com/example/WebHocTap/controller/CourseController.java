@@ -6,6 +6,7 @@ import com.example.WebHocTap.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,16 +34,19 @@ public class CourseController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<CourseDTO> createCourse(@RequestBody CourseModel model) {
         return ResponseEntity.status(HttpStatus.CREATED).body(courseService.createCourse(model));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<CourseDTO> updateCourse(@PathVariable String id, @RequestBody CourseModel model) {
         return ResponseEntity.ok(courseService.updateCourse(id, model));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<Void> deleteCourse(@PathVariable String id) {
         courseService.deleteCourse(id);
         return ResponseEntity.noContent().build();

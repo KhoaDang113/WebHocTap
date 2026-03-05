@@ -7,20 +7,34 @@ export interface ApiResponse<T = unknown> {
 
 // Auth types
 export interface User {
-  id: string
-  email: string
-  fullName?: string
-  avatar?: string
-  role: string
+  username: string
+  role: 'ADMIN' | 'TEACHER' | 'STUDENT'
+}
+
+export interface AuthResponse {
+  accessToken: string
+  refreshToken: string
+  username: string
+  role: 'ADMIN' | 'TEACHER' | 'STUDENT'
 }
 
 export interface LoginRequest {
-  email: string
+  username: string
   password: string
 }
 
 export interface RegisterRequest {
+  username: string
   email: string
   password: string
-  fullName?: string
+  fullName: string
+}
+
+export interface OtpRequest {
+  email: string
+}
+
+export interface VerifyOtpRequest {
+  email: string
+  otp: string
 }
