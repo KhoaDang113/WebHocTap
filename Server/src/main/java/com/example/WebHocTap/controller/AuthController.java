@@ -2,7 +2,6 @@ package com.example.WebHocTap.controller;
 
 import com.example.WebHocTap.dto.AuthResponse;
 import com.example.WebHocTap.model.LoginRequest;
-import com.example.WebHocTap.model.OtpRequest;
 import com.example.WebHocTap.model.RefreshTokenRequest;
 import com.example.WebHocTap.model.RegisterRequest;
 import com.example.WebHocTap.model.VerifyOtpRequest;
@@ -34,9 +33,9 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.verifyRegistrationOtp(request));
     }
 
-    // Standard password login
+    // Standard password login -> sends OTP
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
 

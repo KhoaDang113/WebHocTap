@@ -1,59 +1,102 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks'
 
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: { client_id: string; callback: (response: { credential: string }) => void }) => void
+          renderButton: (element: HTMLElement, config: { theme?: string; size?: string; width?: number; text?: string; shape?: string; logo_alignment?: string }) => void
+        }
+      }
+    }
+  }
+}
+
+const GOOGLE_CLIENT_ID = '260824965372-fht1u0ffbjnu4k8r24107330rblbtrr5.apps.googleusercontent.com'
+
 const LoginPage = () => {
   const navigate = useNavigate()
-  const { login, requestLoginOtp, verifyLoginOtp, loading, error, clearError } = useAuth()
+  const { login, verifyLoginOtp, loginWithGoogle, loading, error, clearError } = useAuth()
 
   // UI state
-  const [loginMode, setLoginMode] = useState<'PASSWORD' | 'OTP'>('PASSWORD')
-  const [isOtpSent, setIsOtpSent] = useState(false)
+  const [isOtpStep, setIsOtpStep] = useState(false)
+  const [userEmail, setUserEmail] = useState('')
 
   // Form state
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [email, setEmail] = useState('')
   const [otpCode, setOtpCode] = useState('')
+
+  const googleBtnRef = useRef<HTMLDivElement>(null)
+
+  // Google Sign-In callback
+  const handleGoogleCallback = useCallback(async (response: { credential: string }) => {
+    clearError()
+    try {
+      await loginWithGoogle(response.credential)
+      navigate('/')
+    } catch {
+      // error handled
+    }
+  }, [loginWithGoogle, navigate, clearError])
+
+  // Initialize Google Sign-In
+  useEffect(() => {
+    const initGoogle = () => {
+      if (window.google && googleBtnRef.current) {
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleCallback,
+        })
+        window.google.accounts.id.renderButton(googleBtnRef.current, {
+          theme: 'outline',
+          size: 'large',
+          width: 320,
+          text: 'signin_with',
+          shape: 'rectangular',
+          logo_alignment: 'left',
+        })
+      }
+    }
+
+    // Try immediately, or wait for script to load
+    if (window.google) {
+      initGoogle()
+    } else {
+      const interval = setInterval(() => {
+        if (window.google) {
+          initGoogle()
+          clearInterval(interval)
+        }
+      }, 200)
+      return () => clearInterval(interval)
+    }
+  }, [handleGoogleCallback])
 
   const handlePasswordLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     clearError()
     try {
-      await login({ username, password })
-      navigate('/')
+      const email = await login({ username, password })
+      setUserEmail(email)
+      setIsOtpStep(true)
     } catch {
       // error handled context
     }
   }
 
-  const handleRequestOtp = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleOtpSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     clearError()
     try {
-      await requestLoginOtp(email)
-      setIsOtpSent(true)
-    } catch {
-      // error handled
-    }
-  }
-
-  const handleVerifyOtp = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    clearError()
-    try {
-      await verifyLoginOtp({ email, otp: otpCode })
+      await verifyLoginOtp({ email: userEmail, otp: otpCode })
       navigate('/')
     } catch {
-      // error handled
+      // error handled context
     }
-  }
-
-  const toggleMode = (mode: 'PASSWORD' | 'OTP') => {
-    setLoginMode(mode)
-    clearError()
-    setIsOtpSent(false)
-    setOtpCode('')
   }
 
   return (
@@ -62,80 +105,59 @@ const LoginPage = () => {
         <div className="auth-header">
           <h1>Đăng nhập</h1>
           <p className="auth-subtitle">
-            {loginMode === 'PASSWORD'
-              ? 'Đăng nhập để tiếp tục học tập'
-              : (isOtpSent ? `Nhập mã OTP vừa được gửi đến ${email}` : 'Đăng nhập bằng mã OTP qua Email')}
+            {isOtpStep
+              ? `Nhập mã OTP vừa được gửi đến ${userEmail}`
+              : 'Đăng nhập để tiếp tục học tập'}
           </p>
-        </div>
-
-        <div className="auth-tabs" style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
-          <button
-            type="button"
-            onClick={() => toggleMode('PASSWORD')}
-            style={{ flex: 1, padding: '0.5rem', background: loginMode === 'PASSWORD' ? '#eef2ff' : 'transparent', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer', fontWeight: loginMode === 'PASSWORD' ? 'bold' : 'normal', color: loginMode === 'PASSWORD' ? '#4f46e5' : '#666' }}
-          >Mật khẩu</button>
-          <button
-            type="button"
-            onClick={() => toggleMode('OTP')}
-            style={{ flex: 1, padding: '0.5rem', background: loginMode === 'OTP' ? '#eef2ff' : 'transparent', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer', fontWeight: loginMode === 'OTP' ? 'bold' : 'normal', color: loginMode === 'OTP' ? '#4f46e5' : '#666' }}
-          >Mã OTP</button>
         </div>
 
         {error && <p className="error-msg">{error}</p>}
 
-        {/* PASSWORD LOGIN */}
-        {loginMode === 'PASSWORD' && (
-          <form onSubmit={handlePasswordLogin}>
-            <div className="form-group">
-              <label htmlFor="username">Tên đăng nhập</label>
-              <input
-                id="username"
-                type="text"
-                required
-                placeholder="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="password">Mật khẩu</label>
-              <input
-                id="password"
-                type="password"
-                required
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            <button type="submit" className="btn-submit" disabled={loading}>
-              {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
-            </button>
-          </form>
-        )}
+        {!isOtpStep ? (
+          <>
+            <form onSubmit={handlePasswordLogin}>
+              <div className="form-group">
+                <label htmlFor="username">Tên đăng nhập</label>
+                <input
+                  id="username"
+                  type="text"
+                  required
+                  placeholder="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="password">Mật khẩu</label>
+                <input
+                  id="password"
+                  type="password"
+                  required
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+              <button type="submit" className="btn-submit" disabled={loading}>
+                {loading ? 'Đang xác thực...' : 'Đăng nhập'}
+              </button>
+            </form>
 
-        {/* OTP LOGIN */}
-        {loginMode === 'OTP' && !isOtpSent && (
-          <form onSubmit={handleRequestOtp}>
-            <div className="form-group">
-              <label htmlFor="email">Email đã đăng ký</label>
-              <input
-                id="email"
-                type="email"
-                required
-                placeholder="example@mail.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+            {/* Divider */}
+            <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0', gap: '0.75rem' }}>
+              <div style={{ flex: 1, height: '1px', background: '#ddd' }} />
+              <span style={{ color: '#999', fontSize: '0.85rem' }}>hoặc đăng nhập với</span>
+              <div style={{ flex: 1, height: '1px', background: '#ddd' }} />
             </div>
-            <button type="submit" className="btn-submit" disabled={loading || !email}>
-              {loading ? 'Đang gửi mã...' : 'Nhận mã OTP'}
-            </button>
-          </form>
-        )}
 
-        {loginMode === 'OTP' && isOtpSent && (
-          <form onSubmit={handleVerifyOtp}>
+            {/* Social Login Buttons */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center' }}>
+              {/* Google Sign-In Button */}
+              <div ref={googleBtnRef} style={{ width: '100%', display: 'flex', justifyContent: 'center' }} />
+            </div>
+          </>
+        ) : (
+          <form onSubmit={handleOtpSubmit}>
             <div className="form-group">
               <label htmlFor="otpCode">Mã OTP (6 số)</label>
               <input
@@ -155,10 +177,10 @@ const LoginPage = () => {
               type="button"
               className="btn-link"
               style={{ marginTop: '1rem', width: '100%' }}
-              onClick={() => setIsOtpSent(false)}
+              onClick={() => { setIsOtpStep(false); setOtpCode(''); clearError() }}
               disabled={loading}
             >
-              Đổi Email khác
+              ← Quay lại
             </button>
           </form>
         )}

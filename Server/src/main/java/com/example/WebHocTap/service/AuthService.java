@@ -13,7 +13,6 @@ import com.example.WebHocTap.repository.RefreshTokenRepository;
 import com.example.WebHocTap.repository.UserRepository;
 import com.example.WebHocTap.repository.OtpSessionRepository;
 import com.example.WebHocTap.entity.OtpSession;
-import com.example.WebHocTap.service.EmailService;
 import com.example.WebHocTap.security.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +22,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.io.Console;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -131,7 +128,7 @@ public class AuthService {
 
     // --- LOGIN FLOW ---
 
-    public AuthResponse login(LoginRequest request) {
+    public Map<String, String> login(LoginRequest request) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
@@ -142,14 +139,27 @@ public class AuthService {
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "User không tồn tại"));
 
-        String accessToken = jwtUtil.generateToken(user.getUsername());
-        String refreshToken = createRefreshToken(user.getUsername());
+        // Generate OTP and send to user's email
+        String otpCode = String.format("%06d", new Random().nextInt(999999));
 
-        return new AuthResponse(accessToken, refreshToken, user.getUsername(), user.getRole());
+        otpSessionRepository.findByEmailAndPurposeAndIsUsedFalse(user.getEmail(), "LOGIN")
+                .ifPresent(otpSessionRepository::delete);
+
+        OtpSession session = new OtpSession();
+        session.setEmail(user.getEmail());
+        session.setOtpCode(otpCode);
+        session.setPurpose("LOGIN");
+        session.setExpiryTime(LocalDateTime.now().plusMinutes(5));
+        session.setUsed(false);
+        otpSessionRepository.save(session);
+
+        emailService.sendOtpEmail(user.getEmail(), otpCode, "LOGIN");
+
+        return Map.of("message", "Mã OTP đã được gửi đến email của bạn", "email", user.getEmail());
     }
 
     public Map<String, String> requestLoginOtp(String email) {
-        User user = userRepository.findByEmail(email)
+        userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Email chưa được đăng ký"));
 
         // Generate 6-digit OTP

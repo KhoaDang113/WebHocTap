@@ -262,6 +262,10 @@
         color: rgba(30, 41, 59, 0.6);
     }
 
+    .user-name {
+        color: #1e293b;
+    }
+
     .nav-link:hover {
         color: #1e293b;
         background-color: rgba(0, 0, 0, 0.04);
