@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-const GOOGLE_CLIENT_ID = '260824965372-fht1u0ffbjnu4k8r24107330rblbtrr5.apps.googleusercontent.com'
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
 const LoginPage = () => {
   const navigate = useNavigate()
