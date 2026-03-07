@@ -7,6 +7,7 @@ import com.example.WebHocTap.exception.AppException;
 import com.example.WebHocTap.model.UserModel;
 import com.example.WebHocTap.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream()
@@ -41,7 +43,7 @@ public class UserService {
         User user = new User();
         user.setUsername(model.getUsername());
         user.setEmail(model.getEmail());
-        user.setPassword(model.getPassword());
+        user.setPassword(passwordEncoder.encode(model.getPassword()));
         user.setFullName(model.getFullName());
         user.setRole(model.getRole());
 

@@ -1,0 +1,64 @@
+package com.example.WebHocTap.controller;
+
+import com.example.WebHocTap.dto.AuthResponse;
+import com.example.WebHocTap.model.LoginRequest;
+import com.example.WebHocTap.model.RefreshTokenRequest;
+import com.example.WebHocTap.model.RegisterRequest;
+import com.example.WebHocTap.model.VerifyOtpRequest;
+import com.example.WebHocTap.service.AuthService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/v1/auth")
+@RequiredArgsConstructor
+public class AuthController {
+
+    private final AuthService authService;
+
+    @PostMapping("/register/request-otp")
+    public ResponseEntity<Map<String, String>> requestRegistrationOtp(@RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(authService.requestRegistrationOtp(request));
+    }
+
+    @PostMapping("/register/verify")
+    public ResponseEntity<AuthResponse> verifyRegistrationOtp(@RequestBody VerifyOtpRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.verifyRegistrationOtp(request));
+    }
+
+    // Standard password login -> sends OTP
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
+    }
+
+    // OTP login
+    @PostMapping("/login/request-otp")
+    public ResponseEntity<Map<String, String>> requestLoginOtp(
+            @RequestBody com.example.WebHocTap.model.OtpRequest request) {
+        return ResponseEntity.ok(authService.requestLoginOtp(request.getEmail()));
+    }
+
+    @PostMapping("/login/verify")
+    public ResponseEntity<AuthResponse> verifyLoginOtp(@RequestBody VerifyOtpRequest request) {
+        return ResponseEntity.ok(authService.verifyLoginOtp(request));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
+        return ResponseEntity.ok(authService.refreshToken(request.getRefreshToken()));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logout(@RequestBody RefreshTokenRequest request) {
+        authService.logout(request.getRefreshToken());
+        return ResponseEntity.ok(Map.of("message", "Đăng xuất thành công"));
+    }
+}
