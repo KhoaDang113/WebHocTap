@@ -31,7 +31,15 @@ public class User {
 
     private String fullName;
 
+    private String avatarUrl;
+
+    private String bio;
+
     private UserRole role;
+
+    private boolean isLocked = false;
+
+    private boolean pendingTeacherRequest = false;
 
     @CreatedDate
     private LocalDateTime createdAt;
