@@ -50,8 +50,14 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/v1/lessons/**").hasAnyRole("ADMIN", "TEACHER")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/lessons/**").hasAnyRole("ADMIN", "TEACHER")
 
+                        // Profile: any authenticated user
+                        .requestMatchers("/api/v1/profile/**").authenticated()
+
                         // User management: ADMIN only
                         .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
+
+                        // Admin stats: ADMIN only
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
 
                         // Everything else requires authentication
                         .anyRequest().authenticated())

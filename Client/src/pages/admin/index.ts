@@ -1,0 +1,5 @@
+export { default as AdminDashboardPage } from './AdminDashboardPage'
+export { default as AdminUserManagementPage } from './AdminUserManagementPage'
+export { default as AdminCoursesPage } from './AdminCoursesPage'
+export { default as AdminLivePage } from './AdminLivePage'
+export { default as AdminSettingsPage } from './AdminSettingsPage'

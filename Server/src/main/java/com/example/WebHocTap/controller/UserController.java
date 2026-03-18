@@ -19,6 +19,8 @@ public class UserController {
 
     private final UserService userService;
 
+    // ─── Danh sách user ───────────────────────────────────────────────────────
+
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
@@ -28,6 +30,13 @@ public class UserController {
     public ResponseEntity<UserDTO> getUserById(@PathVariable String id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
+
+    @GetMapping("/pending-teachers")
+    public ResponseEntity<List<UserDTO>> getPendingTeachers() {
+        return ResponseEntity.ok(userService.getPendingTeachers());
+    }
+
+    // ─── CRUD ─────────────────────────────────────────────────────────────────
 
     @PostMapping
     public ResponseEntity<UserDTO> createUser(@RequestBody UserModel model) {
@@ -43,5 +52,29 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // ─── Khóa / Mở tài khoản ─────────────────────────────────────────────────
+
+    @PutMapping("/{id}/lock")
+    public ResponseEntity<UserDTO> lockUser(@PathVariable String id) {
+        return ResponseEntity.ok(userService.lockUser(id));
+    }
+
+    @PutMapping("/{id}/unlock")
+    public ResponseEntity<UserDTO> unlockUser(@PathVariable String id) {
+        return ResponseEntity.ok(userService.unlockUser(id));
+    }
+
+    // ─── Phê duyệt Giảng viên ────────────────────────────────────────────────
+
+    @PutMapping("/{id}/approve-teacher")
+    public ResponseEntity<UserDTO> approveTeacher(@PathVariable String id) {
+        return ResponseEntity.ok(userService.approveTeacher(id));
+    }
+
+    @PutMapping("/{id}/revoke-teacher")
+    public ResponseEntity<UserDTO> revokeTeacher(@PathVariable String id) {
+        return ResponseEntity.ok(userService.revokeTeacher(id));
     }
 }

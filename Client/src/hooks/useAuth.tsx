@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import { createContext, useContext, useState, type ReactNode } from 'react'
 import axiosClient from '../api/axiosClient'
 import type { User, AuthResponse, LoginRequest, RegisterRequest, VerifyOtpRequest } from '../types'
 
@@ -8,8 +8,8 @@ interface AuthContextType {
     loading: boolean
     error: string | null
     login: (credentials: LoginRequest) => Promise<string>
-    verifyLoginOtp: (info: VerifyOtpRequest) => Promise<void>
-    loginWithGoogle: (idToken: string) => Promise<void>
+    verifyLoginOtp: (info: VerifyOtpRequest) => Promise<User | void>
+    loginWithGoogle: (idToken: string) => Promise<User | void>
     logout: () => Promise<void>
     clearError: () => void
     requestRegisterOtp: (info: RegisterRequest) => Promise<void>
@@ -19,20 +19,19 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<User | null>(null)
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
-
-    useEffect(() => {
+    const [user, setUser] = useState<User | null>(() => {
         const stored = localStorage.getItem('user')
         if (stored) {
             try {
-                setUser(JSON.parse(stored))
+                return JSON.parse(stored)
             } catch {
                 localStorage.removeItem('user')
             }
         }
-    }, [])
+        return null
+    })
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
     const saveAuth = (data: AuthResponse) => {
         localStorage.setItem('accessToken', data.accessToken)
@@ -40,6 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userData: User = { username: data.username, role: data.role }
         localStorage.setItem('user', JSON.stringify(userData))
         setUser(userData)
+        return userData
     }
 
     const handleError = (err: unknown, defaultMsg: string) => {
@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setError(null)
         try {
             const res = await axiosClient.post<AuthResponse>('/auth/login/verify', info)
-            saveAuth(res.data)
+            return saveAuth(res.data)
         } catch (err: unknown) {
             handleError(err, 'Xác thực mã OTP thất bại')
         } finally {
@@ -106,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setError(null)
         try {
             const res = await axiosClient.post<AuthResponse>('/auth/oauth2/google', { idToken })
-            saveAuth(res.data)
+            return saveAuth(res.data)
         } catch (err: unknown) {
             handleError(err, 'Đăng nhập với Google thất bại')
         } finally {
