@@ -2,7 +2,15 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from '@/hooks'
 import { Navbar } from '@/components'
-import { HomePage, LoginPage, RegisterPage, NotFoundPage } from '@/pages'
+import { HomePage, LoginPage, RegisterPage, NotFoundPage, ProfilePage, ChangePasswordPage } from '@/pages'
+import AdminLayout from '@/components/admin/AdminLayout'
+import {
+  AdminDashboardPage,
+  AdminUserManagementPage,
+  AdminCoursesPage,
+  AdminLivePage,
+  AdminSettingsPage,
+} from '@/pages/admin'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,15 +26,36 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          <Navbar />
-          <main className="main-content">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </main>
+          <Routes>
+            {/* Admin routes - layout riêng, không có Navbar */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboardPage />} />
+              <Route path="users" element={<AdminUserManagementPage />} />
+              <Route path="courses" element={<AdminCoursesPage />} />
+              <Route path="live" element={<AdminLivePage />} />
+              <Route path="settings" element={<AdminSettingsPage />} />
+            </Route>
+
+            {/* Public routes - có Navbar */}
+            <Route
+              path="*"
+              element={
+                <>
+                  <Navbar />
+                  <main className="main-content">
+                    <Routes>
+                      <Route path="/" element={<HomePage />} />
+                      <Route path="/login" element={<LoginPage />} />
+                      <Route path="/register" element={<RegisterPage />} />
+                      <Route path="/profile" element={<ProfilePage />} />
+                      <Route path="/change-password" element={<ChangePasswordPage />} />
+                      <Route path="*" element={<NotFoundPage />} />
+                    </Routes>
+                  </main>
+                </>
+              }
+            />
+          </Routes>
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>

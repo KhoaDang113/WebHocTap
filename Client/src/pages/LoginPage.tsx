@@ -15,6 +15,7 @@ declare global {
   }
 }
 
+
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
 const LoginPage = () => {
@@ -36,8 +37,12 @@ const LoginPage = () => {
   const handleGoogleCallback = useCallback(async (response: { credential: string }) => {
     clearError()
     try {
-      await loginWithGoogle(response.credential)
-      navigate('/')
+      const user = await loginWithGoogle(response.credential)
+      if (user?.role === 'ADMIN') {
+        navigate('/admin')
+      } else {
+        navigate('/')
+      }
     } catch {
       // error handled
     }
@@ -92,8 +97,12 @@ const LoginPage = () => {
     e.preventDefault()
     clearError()
     try {
-      await verifyLoginOtp({ email: userEmail, otp: otpCode })
-      navigate('/')
+      const user = await verifyLoginOtp({ email: userEmail, otp: otpCode })
+      if (user?.role === 'ADMIN') {
+        navigate('/admin')
+      } else {
+        navigate('/')
+      }
     } catch {
       // error handled context
     }
