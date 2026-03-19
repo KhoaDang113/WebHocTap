@@ -1,5 +1,6 @@
 package com.example.WebHocTap.controller;
 
+import com.example.WebHocTap.dto.ApiResponse;
 import com.example.WebHocTap.dto.LessonDTO;
 import com.example.WebHocTap.model.LessonModel;
 import com.example.WebHocTap.service.LessonService;
@@ -19,36 +20,37 @@ public class LessonController {
     private final LessonService lessonService;
 
     @GetMapping
-    public ResponseEntity<List<LessonDTO>> getAllLessons() {
-        return ResponseEntity.ok(lessonService.getAllLessons());
+    public ResponseEntity<ApiResponse<List<LessonDTO>>> getAllLessons() {
+        return ResponseEntity.ok(ApiResponse.ok(lessonService.getAllLessons()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<LessonDTO> getLessonById(@PathVariable String id) {
-        return ResponseEntity.ok(lessonService.getLessonById(id));
+    public ResponseEntity<ApiResponse<LessonDTO>> getLessonById(@PathVariable String id) {   
+        return ResponseEntity.ok(ApiResponse.ok(lessonService.getLessonById(id)));
     }
 
     @GetMapping("/course/{courseId}")
-    public ResponseEntity<List<LessonDTO>> getLessonsByCourse(@PathVariable String courseId) {
-        return ResponseEntity.ok(lessonService.getLessonsByCourse(courseId));
+    public ResponseEntity<ApiResponse<List<LessonDTO>>> getLessonsByCourse(@PathVariable String courseId) {
+        return ResponseEntity.ok(ApiResponse.ok(lessonService.getLessonsByCourse(courseId)));   
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
-    public ResponseEntity<LessonDTO> createLesson(@RequestBody LessonModel model) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(lessonService.createLesson(model));
+    public ResponseEntity<ApiResponse<LessonDTO>> createLesson(@RequestBody LessonModel model) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(lessonService.createLesson(model), "Lesson created successfully"));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
-    public ResponseEntity<LessonDTO> updateLesson(@PathVariable String id, @RequestBody LessonModel model) {
-        return ResponseEntity.ok(lessonService.updateLesson(id, model));
+    public ResponseEntity<ApiResponse<LessonDTO>> updateLesson(@PathVariable String id, @RequestBody LessonModel model) {
+        return ResponseEntity.ok(ApiResponse.ok(lessonService.updateLesson(id, model), "Lesson updated successfully"));        
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
-    public ResponseEntity<Void> deleteLesson(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> deleteLesson(@PathVariable String id) {
         lessonService.deleteLesson(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.ok(null, "Lesson deleted successfully"));
     }
 }
+

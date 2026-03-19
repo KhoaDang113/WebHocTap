@@ -1,7 +1,9 @@
 package com.example.WebHocTap.controller;
 
+import com.example.WebHocTap.dto.ApiResponse;
 import com.example.WebHocTap.dto.CourseDTO;
-import com.example.WebHocTap.model.CourseModel;
+import com.example.WebHocTap.model.CreateCourseRequest;
+import com.example.WebHocTap.model.UpdateCourseStatusRequest;
 import com.example.WebHocTap.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,36 +21,37 @@ public class CourseController {
     private final CourseService courseService;
 
     @GetMapping
-    public ResponseEntity<List<CourseDTO>> getAllCourses() {
-        return ResponseEntity.ok(courseService.getAllCourses());
+    public ResponseEntity<ApiResponse<List<CourseDTO>>> getAllCourses() {
+        return ResponseEntity.ok(ApiResponse.ok(courseService.getAllCourses()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CourseDTO> getCourseById(@PathVariable String id) {
-        return ResponseEntity.ok(courseService.getCourseById(id));
-    }
-
-    @GetMapping("/teacher/{teacherId}")
-    public ResponseEntity<List<CourseDTO>> getCoursesByTeacher(@PathVariable String teacherId) {
-        return ResponseEntity.ok(courseService.getCoursesByTeacher(teacherId));
+    public ResponseEntity<ApiResponse<CourseDTO>> getCourseById(@PathVariable String id) {
+        return ResponseEntity.ok(ApiResponse.ok(courseService.getCourseById(id)));
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
-    public ResponseEntity<CourseDTO> createCourse(@RequestBody CourseModel model) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(courseService.createCourse(model));
+    public ResponseEntity<ApiResponse<CourseDTO>> createCourse(@RequestBody CreateCourseRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(courseService.createCourse(request), "Course created successfully"));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
-    public ResponseEntity<CourseDTO> updateCourse(@PathVariable String id, @RequestBody CourseModel model) {
-        return ResponseEntity.ok(courseService.updateCourse(id, model));
+    public ResponseEntity<ApiResponse<CourseDTO>> updateCourse(@PathVariable String id, @RequestBody CreateCourseRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok(courseService.updateCourse(id, request), "Course updated successfully"));
+    }
+
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<ApiResponse<CourseDTO>> updateCourseStatus(@PathVariable String id, @RequestBody UpdateCourseStatusRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok(courseService.updateCourseStatus(id, request), "Course status updated successfully"));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
-    public ResponseEntity<Void> deleteCourse(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> deleteCourse(@PathVariable String id) {
         courseService.deleteCourse(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.ok(null, "Course deleted successfully"));
     }
 }

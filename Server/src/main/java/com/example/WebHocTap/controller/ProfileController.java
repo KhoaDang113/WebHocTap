@@ -1,5 +1,6 @@
 package com.example.WebHocTap.controller;
 
+import com.example.WebHocTap.dto.ApiResponse;
 import com.example.WebHocTap.dto.UserDTO;
 import com.example.WebHocTap.model.ChangePasswordRequest;
 import com.example.WebHocTap.model.UpdateProfileRequest;
@@ -16,24 +17,24 @@ public class ProfileController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<UserDTO> getMyProfile() {
-        return ResponseEntity.ok(userService.getMyProfile());
+    public ResponseEntity<ApiResponse<UserDTO>> getMyProfile() {
+        return ResponseEntity.ok(ApiResponse.ok(userService.getMyProfile()));
     }
 
     @PutMapping
-    public ResponseEntity<UserDTO> updateProfile(@RequestBody UpdateProfileRequest request) {
-        return ResponseEntity.ok(userService.updateProfile(request));
+    public ResponseEntity<ApiResponse<UserDTO>> updateProfile(@RequestBody UpdateProfileRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok(userService.updateProfile(request), "Profile updated successfully"));
     }
 
     @PostMapping("/change-password")
-    public ResponseEntity<Void> changePassword(@RequestBody ChangePasswordRequest request) {
+    public ResponseEntity<ApiResponse<Void>> changePassword(@RequestBody ChangePasswordRequest request) {
         userService.changePassword(request);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.ok(null, "Password changed successfully"));
     }
 
     @PostMapping("/request-teacher")
-    public ResponseEntity<Void> requestTeacherRole() {
+    public ResponseEntity<ApiResponse<Void>> requestTeacherRole() {
         userService.requestTeacherRole();
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.ok(null, "Teacher role requested successfully"));
     }
 }

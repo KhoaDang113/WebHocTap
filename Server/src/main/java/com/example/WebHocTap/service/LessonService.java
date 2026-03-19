@@ -42,6 +42,8 @@ public class LessonService {
         lesson.setTitle(model.getTitle());
         lesson.setContent(model.getContent());
         lesson.setOrderIndex(model.getOrderIndex());
+        lesson.setVideoUrl(model.getVideoUrl());
+        lesson.setImageUrl(model.getImageUrl());
 
         return toDTO(lessonRepository.save(lesson));
     }
@@ -54,6 +56,8 @@ public class LessonService {
         lesson.setTitle(model.getTitle());
         lesson.setContent(model.getContent());
         lesson.setOrderIndex(model.getOrderIndex());
+        lesson.setVideoUrl(model.getVideoUrl());
+        lesson.setImageUrl(model.getImageUrl());
 
         return toDTO(lessonRepository.save(lesson));
     }
@@ -72,6 +76,8 @@ public class LessonService {
         dto.setTitle(lesson.getTitle());
         dto.setContent(lesson.getContent());
         dto.setOrderIndex(lesson.getOrderIndex());
+        dto.setVideoUrl(lesson.getVideoUrl());
+        dto.setImageUrl(lesson.getImageUrl());
         dto.setCreatedAt(lesson.getCreatedAt());
         dto.setUpdatedAt(lesson.getUpdatedAt());
         return dto;

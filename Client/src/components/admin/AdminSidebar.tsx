@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, BookOpen, Video, Settings, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Users, BookOpen, Video, Settings, LogOut, ChevronLeft, ChevronRight, Layers, HelpCircle } from "lucide-react";
 import { useState } from "react";
 
 export default function AdminSidebar() {
@@ -9,7 +9,10 @@ export default function AdminSidebar() {
   const links = [
     { to: "/admin", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
     { to: "/admin/users", icon: <Users size={20} />, label: "Quản lý User" },
+    { to: "/admin/categories", icon: <Layers size={20} />, label: "Danh mục" },
     { to: "/admin/courses", icon: <BookOpen size={20} />, label: "Khóa học" },
+    { to: "/admin/lessons", icon: <BookOpen size={20} />, label: "Bài học" },
+    { to: "/admin/quizzes", icon: <HelpCircle size={20} />, label: "Quiz / Câu hỏi" },
     { to: "/admin/live", icon: <Video size={20} />, label: "Lớp học Live" },
     { to: "/admin/settings", icon: <Settings size={20} />, label: "Cài đặt" },
   ];

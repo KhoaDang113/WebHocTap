@@ -1,5 +1,6 @@
 package com.example.WebHocTap.controller;
 
+import com.example.WebHocTap.dto.ApiResponse;
 import com.example.WebHocTap.dto.UserDTO;
 import com.example.WebHocTap.model.UserModel;
 import com.example.WebHocTap.service.UserService;
@@ -19,62 +20,58 @@ public class UserController {
 
     private final UserService userService;
 
-    // ─── Danh sách user ───────────────────────────────────────────────────────
-
+    // ??? Danh sách user ???????????????????????????????????????????????????????????????????
     @GetMapping
-    public ResponseEntity<List<UserDTO>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<ApiResponse<List<UserDTO>>> getAllUsers() {
+        return ResponseEntity.ok(ApiResponse.ok(userService.getAllUsers()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable String id) {
-        return ResponseEntity.ok(userService.getUserById(id));
+    public ResponseEntity<ApiResponse<UserDTO>> getUserById(@PathVariable String id) {
+        return ResponseEntity.ok(ApiResponse.ok(userService.getUserById(id)));
     }
 
     @GetMapping("/pending-teachers")
-    public ResponseEntity<List<UserDTO>> getPendingTeachers() {
-        return ResponseEntity.ok(userService.getPendingTeachers());
+    public ResponseEntity<ApiResponse<List<UserDTO>>> getPendingTeachers() {
+        return ResponseEntity.ok(ApiResponse.ok(userService.getPendingTeachers()));
     }
 
-    // ─── CRUD ─────────────────────────────────────────────────────────────────
-
+    // ??? CRUD ?????????????????????????????????????????????????????????????????????????????
     @PostMapping
-    public ResponseEntity<UserDTO> createUser(@RequestBody UserModel model) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(model));
+    public ResponseEntity<ApiResponse<UserDTO>> createUser(@RequestBody UserModel model) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(userService.createUser(model), "User created successfully"));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable String id, @RequestBody UserModel model) {
-        return ResponseEntity.ok(userService.updateUser(id, model));
+    public ResponseEntity<ApiResponse<UserDTO>> updateUser(@PathVariable String id, @RequestBody UserModel model) {
+        return ResponseEntity.ok(ApiResponse.ok(userService.updateUser(id, model), "User updated successfully"));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.ok(null, "User deleted successfully"));
     }
 
-    // ─── Khóa / Mở tài khoản ─────────────────────────────────────────────────
-
+    // ??? Khóa / M? tài kho?n ??????????????????????????????????????????????????????????????
     @PutMapping("/{id}/lock")
-    public ResponseEntity<UserDTO> lockUser(@PathVariable String id) {
-        return ResponseEntity.ok(userService.lockUser(id));
+    public ResponseEntity<ApiResponse<UserDTO>> lockUser(@PathVariable String id) {
+        return ResponseEntity.ok(ApiResponse.ok(userService.lockUser(id), "User locked successfully"));
     }
 
     @PutMapping("/{id}/unlock")
-    public ResponseEntity<UserDTO> unlockUser(@PathVariable String id) {
-        return ResponseEntity.ok(userService.unlockUser(id));
+    public ResponseEntity<ApiResponse<UserDTO>> unlockUser(@PathVariable String id) {
+        return ResponseEntity.ok(ApiResponse.ok(userService.unlockUser(id), "User unlocked successfully"));
     }
 
-    // ─── Phê duyệt Giảng viên ────────────────────────────────────────────────
-
+    // ??? Phê duy?t Gi?ng viên ?????????????????????????????????????????????????????????????
     @PutMapping("/{id}/approve-teacher")
-    public ResponseEntity<UserDTO> approveTeacher(@PathVariable String id) {
-        return ResponseEntity.ok(userService.approveTeacher(id));
+    public ResponseEntity<ApiResponse<UserDTO>> approveTeacher(@PathVariable String id) {
+        return ResponseEntity.ok(ApiResponse.ok(userService.approveTeacher(id), "Teacher approved successfully"));
     }
 
     @PutMapping("/{id}/revoke-teacher")
-    public ResponseEntity<UserDTO> revokeTeacher(@PathVariable String id) {
-        return ResponseEntity.ok(userService.revokeTeacher(id));
+    public ResponseEntity<ApiResponse<UserDTO>> revokeTeacher(@PathVariable String id) {
+        return ResponseEntity.ok(ApiResponse.ok(userService.revokeTeacher(id), "Teacher role revoked"));
     }
 }

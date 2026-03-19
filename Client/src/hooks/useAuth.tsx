@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from 'react'
 import axiosClient from '../api/axiosClient'
-import type { User, AuthResponse, LoginRequest, RegisterRequest, VerifyOtpRequest } from '../types'
-
+import type { User, AuthResponse, LoginRequest, RegisterRequest, VerifyOtpRequest, ApiResponse } from '../types'
 
 interface AuthContextType {
     user: User | null
@@ -52,10 +51,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(true)
         setError(null)
         try {
-            const res = await axiosClient.post<{ message: string; email: string }>('/auth/login', credentials)
-            return res.data.email
+            const res = await axiosClient.post<ApiResponse<{ message: string; email: string }>>('/auth/login', credentials)
+            return res.data.data.email
         } catch (err: unknown) {
-            handleError(err, 'Đăng nhập thất bại')
+            handleError(err, '��ng nh?p th?t b?i')
             return ''
         } finally {
             setLoading(false)
@@ -66,10 +65,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(true)
         setError(null)
         try {
-            const res = await axiosClient.post<AuthResponse>('/auth/login/verify', info)
-            return saveAuth(res.data)
+            const res = await axiosClient.post<ApiResponse<AuthResponse>>('/auth/login/verify', info)
+            return saveAuth(res.data.data)
         } catch (err: unknown) {
-            handleError(err, 'Xác thực mã OTP thất bại')
+            handleError(err, 'X�c th?c m? OTP th?t b?i')
         } finally {
             setLoading(false)
         }
@@ -81,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             await axiosClient.post('/auth/register/request-otp', info)
         } catch (err: unknown) {
-            handleError(err, 'Lỗi khi gửi mã OTP')
+            handleError(err, 'L?i khi g?i m? OTP')
         } finally {
             setLoading(false)
         }
@@ -91,24 +90,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(true)
         setError(null)
         try {
-            const res = await axiosClient.post<AuthResponse>('/auth/register/verify', info)
-            saveAuth(res.data)
+            const res = await axiosClient.post<ApiResponse<AuthResponse>>('/auth/register/verify', info)
+            saveAuth(res.data.data)
         } catch (err: unknown) {
-            handleError(err, 'Xác thực mã OTP thất bại')
+            handleError(err, 'X�c th?c m? OTP th?t b?i')
         } finally {
             setLoading(false)
         }
     }
 
-
     const loginWithGoogle = async (idToken: string) => {
         setLoading(true)
         setError(null)
         try {
-            const res = await axiosClient.post<AuthResponse>('/auth/oauth2/google', { idToken })
-            return saveAuth(res.data)
+            const res = await axiosClient.post<ApiResponse<AuthResponse>>('/auth/oauth2/google', { idToken })
+            return saveAuth(res.data.data)
         } catch (err: unknown) {
-            handleError(err, 'Đăng nhập với Google thất bại')
+            handleError(err, '��ng nh?p v?i Google th?t b?i')
         } finally {
             setLoading(false)
         }
