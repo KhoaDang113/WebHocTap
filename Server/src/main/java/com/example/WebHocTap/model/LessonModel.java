@@ -12,4 +12,6 @@ public class LessonModel {
     private String title;
     private String content;
     private int orderIndex;
+    private String videoUrl;
+    private String imageUrl;
 }

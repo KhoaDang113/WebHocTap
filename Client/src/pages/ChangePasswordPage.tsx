@@ -1,10 +1,8 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import axiosClient from "@/api/axiosClient";
 import { Save, Lock, KeyRound, ShieldAlert, CheckCircle2, Loader2 } from "lucide-react";
 
 export default function ChangePasswordPage() {
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     currentPassword: "",
     newPassword: "",

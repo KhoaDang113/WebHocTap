@@ -26,6 +26,8 @@ public class Lesson {
     private String content;
 
     private int orderIndex;
+    private String videoUrl;
+    private String imageUrl;
 
     @CreatedDate
     private LocalDateTime createdAt;

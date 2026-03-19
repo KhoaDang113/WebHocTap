@@ -9,6 +9,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -24,7 +25,12 @@ public class Course {
 
     private String description;
 
-    private String teacherId;
+    private String thumbnailUrl;
+
+    private BigDecimal price;
+    private String instructor;
+
+    private String categoryId;
 
     private CourseStatus status;
 
@@ -34,3 +40,4 @@ public class Course {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 }
+

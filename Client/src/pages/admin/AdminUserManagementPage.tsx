@@ -1,30 +1,88 @@
 import { useState } from "react";
-import { Search, Filter, MoreVertical, Edit, Lock, Trash2, UserPlus, ChevronLeft, ChevronRight, CheckCircle, XCircle, AlertCircle } from "lucide-react";
-
-const mockUsers = [
-  { id: 1, avatar: "https://i.pravatar.cc/150?u=1", name: "Nguyễn Văn An", email: "an.nv@edu.vn", role: "Sinh viên", faculty: "CNTT", status: "Hoạt động" },
-  { id: 2, avatar: "https://i.pravatar.cc/150?u=2", name: "Trần Thị Bình", email: "binh.tt@edu.vn", role: "Giảng viên", faculty: "Kinh tế", status: "Hoạt động" },
-  { id: 3, avatar: "https://i.pravatar.cc/150?u=3", name: "Lê Văn Cường", email: "cuong.lv@edu.vn", role: "Sinh viên", faculty: "Kỹ thuật", status: "Bị khóa" },
-  { id: 4, avatar: "https://i.pravatar.cc/150?u=4", name: "Phạm Thu Dung", email: "dung.pt@edu.vn", role: "Giảng viên", faculty: "Ngoại ngữ", status: "Hoạt động" },
-  { id: 5, avatar: "https://i.pravatar.cc/150?u=5", name: "Hoàng Minh Tuấn", email: "tuan.hm@edu.vn", role: "Admin", faculty: "Hệ thống", status: "Hoạt động" },
-  { id: 6, avatar: "https://i.pravatar.cc/150?u=6", name: "Vũ Hải Yến", email: "yen.vh@edu.vn", role: "Sinh viên", faculty: "CNTT", status: "Chờ duyệt" },
-  { id: 7, avatar: "https://i.pravatar.cc/150?u=7", name: "Đặng Quang Hưng", email: "hung.dq@edu.vn", role: "Sinh viên", faculty: "Kinh tế", status: "Hoạt động" },
-  { id: 8, avatar: "https://i.pravatar.cc/150?u=8", name: "Bùi Thị Mai", email: "mai.bt@edu.vn", role: "Giảng viên", faculty: "CNTT", status: "Hoạt động" },
-];
+import { useAuth, useUsers } from "@/hooks";
+import { Search, Filter, MoreVertical, Edit, Lock, Trash2, UserPlus, ChevronLeft, ChevronRight, CheckCircle, XCircle, AlertCircle, Loader2 } from "lucide-react";
+import type { UserDTO } from "@/types";
 
 export default function AdminUserManagementPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "ADMIN";
+  const { data: users = [], isLoading, isError, error } = useUsers({ enabled: isAdmin });
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
-  const [facultyFilter, setFacultyFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const filteredUsers = mockUsers.filter(user => {
+  if (!isAdmin) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <AlertCircle className="text-red-600" size={32} />
+          <p className="text-slate-600">Bạn không có quyền truy cập trang này.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Map backend role to Vietnamese
+  const getRoleLabel = (role: string) => {
+    const roleMap: Record<string, string> = {
+      'ADMIN': 'Admin',
+      'TEACHER': 'Giảng viên',
+      'STUDENT': 'Sinh viên'
+    };
+    return roleMap[role] || role;
+  };
+
+  // Determine status based on isBlocked flag
+  const getStatus = (user: UserDTO) => {
+    if (user.isBlocked) return 'Bị khóa';
+    return 'Hoạt động';
+  };
+
+  // Transform users data for UI
+  const transformedUsers = users.map((user: UserDTO) => ({
+    id: user.id,
+    avatar: `https://i.pravatar.cc/150?u=${user.username}`,
+    name: user.fullName,
+    email: user.email,
+    role: getRoleLabel(user.role),
+    facultyCode: user.role,
+    status: getStatus(user),
+    originalUser: user
+  }));
+
+  const filteredUsers = transformedUsers.filter(user => {
     const matchSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchRole = roleFilter === "all" || user.role === roleFilter;
-    const matchFaculty = facultyFilter === "all" || user.faculty === facultyFilter;
     const matchStatus = statusFilter === "all" || user.status === statusFilter;
-    return matchSearch && matchRole && matchFaculty && matchStatus;
+    return matchSearch && matchRole && matchStatus;
   });
+
+  if (isLoading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="animate-spin text-blue-600" size={32} />
+          <p className="text-slate-600">Đang tải dữ liệu...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    const statusCode = (error as { response?: { status?: number } })?.response?.status;
+    const errorMessage = statusCode === 403
+      ? 'Bạn không có quyền xem danh sách người dùng (403).'
+      : (error?.message || 'Không thể tải dữ liệu người dùng');
+
+    return (
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <AlertCircle className="text-red-600" size={32} />
+          <p className="text-slate-600">Lỗi: {errorMessage}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -70,19 +128,6 @@ export default function AdminUserManagementPage() {
 
             <select 
               className="border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-              value={facultyFilter}
-              onChange={(e) => setFacultyFilter(e.target.value)}
-            >
-              <option value="all">Tất cả Khoa</option>
-              <option value="CNTT">CNTT</option>
-              <option value="Kinh tế">Kinh tế</option>
-              <option value="Kỹ thuật">Kỹ thuật</option>
-              <option value="Ngoại ngữ">Ngoại ngữ</option>
-              <option value="Hệ thống">Hệ thống</option>
-            </select>
-
-            <select 
-              className="border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
@@ -103,7 +148,6 @@ export default function AdminUserManagementPage() {
                 </th>
                 <th className="py-4 px-6 font-semibold">Người dùng</th>
                 <th className="py-4 px-6 font-semibold">Vai trò</th>
-                <th className="py-4 px-6 font-semibold">Khoa/Đơn vị</th>
                 <th className="py-4 px-6 font-semibold">Trạng thái</th>
                 <th className="py-4 px-6 font-semibold text-right">Hành động</th>
               </tr>
@@ -132,18 +176,13 @@ export default function AdminUserManagementPage() {
                       {user.role}
                     </span>
                   </td>
-                  <td className="py-3 px-6 text-sm text-slate-600 font-medium">
-                    {user.faculty}
-                  </td>
                   <td className="py-3 px-6">
                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
                       user.status === 'Hoạt động' ? 'bg-green-100 text-green-700' : 
-                      user.status === 'Bị khóa' ? 'bg-red-100 text-red-700' : 
-                      'bg-yellow-100 text-yellow-700'
+                      'bg-red-100 text-red-700'
                     }`}>
                       {user.status === 'Hoạt động' && <CheckCircle size={12} />}
                       {user.status === 'Bị khóa' && <XCircle size={12} />}
-                      {user.status === 'Chờ duyệt' && <AlertCircle size={12} />}
                       {user.status}
                     </span>
                   </td>
@@ -166,7 +205,7 @@ export default function AdminUserManagementPage() {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-500">
+                  <td colSpan={5} className="py-8 text-center text-slate-500">
                     Không tìm thấy người dùng nào phù hợp.
                   </td>
                 </tr>
@@ -177,7 +216,7 @@ export default function AdminUserManagementPage() {
 
         <div className="p-4 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-slate-500">
-            Hiển thị <span className="font-medium text-slate-800">1</span> đến <span className="font-medium text-slate-800">{filteredUsers.length}</span> trong số <span className="font-medium text-slate-800">{mockUsers.length}</span> người dùng
+            Hiển thị <span className="font-medium text-slate-800">1</span> đến <span className="font-medium text-slate-800">{filteredUsers.length}</span> trong số <span className="font-medium text-slate-800">{transformedUsers.length}</span> người dùng
           </p>
           <div className="flex items-center gap-1">
             <button className="p-1.5 rounded border border-slate-300 text-slate-500 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>

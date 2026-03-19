@@ -15,6 +15,8 @@ public class LessonDTO {
     private String title;
     private String content;
     private int orderIndex;
+    private String videoUrl;
+    private String imageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

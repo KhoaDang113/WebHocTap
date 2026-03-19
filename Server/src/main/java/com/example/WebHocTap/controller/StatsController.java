@@ -1,5 +1,6 @@
 package com.example.WebHocTap.controller;
 
+import com.example.WebHocTap.dto.ApiResponse;
 import com.example.WebHocTap.dto.StatsDTO;
 import com.example.WebHocTap.service.StatsService;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ public class StatsController {
     private final StatsService statsService;
 
     @GetMapping("/stats")
-    public ResponseEntity<StatsDTO> getStats() {
-        return ResponseEntity.ok(statsService.getStats());
+    public ResponseEntity<ApiResponse<StatsDTO>> getStats() {
+        return ResponseEntity.ok(ApiResponse.ok(statsService.getStats()));
     }
 }

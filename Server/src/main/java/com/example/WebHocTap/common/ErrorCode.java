@@ -8,7 +8,8 @@ public enum ErrorCode {
     DUPLICATE(4, "Resource already exists"),
     UNAUTHORIZED(5, "Unauthorized"),
     FORBIDDEN(6, "Forbidden"),
-    VALIDATION_ERROR(7, "Validation error");
+    VALIDATION_ERROR(7, "Validation error"),
+    INTERNAL_SERVER_ERROR(8, "Internal server error");
 
     private final int code;
     private final String message;
