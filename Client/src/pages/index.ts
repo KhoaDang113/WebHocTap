@@ -1,0 +1,10 @@
+// Export all pages from here
+export { default as HomePage } from './HomePage'
+export { default as LoginPage } from './LoginPage'
+export { default as RegisterPage } from './RegisterPage'
+export { default as NotFoundPage } from './NotFoundPage'
+export * from './ProfilePage'
+export { default as ChangePasswordPage } from './ChangePasswordPage'
+export { default as CoursesPage } from './CoursesPage'
+export { default as CourseDetailPage } from './CourseDetailPage'
+export { default as LearningPage } from './LearningPage'

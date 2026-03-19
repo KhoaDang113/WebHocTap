@@ -1,0 +1,14 @@
+{
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Spring Boot-WebHocTapApplication<WebHocTap>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.example.WebHocTap.WebHocTapApplication",
+      "projectName": "WebHocTap",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
+}
