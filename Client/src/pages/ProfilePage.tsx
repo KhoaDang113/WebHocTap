@@ -312,7 +312,22 @@ export function ProfilePage() {
                         <div className="p-5 flex-1 flex flex-col">
                           <h4 className="font-semibold text-slate-900 dark:text-white line-clamp-2 leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{course.title}</h4>
                           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 line-clamp-2">{course.description || "Danh mục khóa học"}</p>
-                          <div className="mt-auto pt-5 flex items-center justify-between">
+                          
+                          {/* Learning Progress Bar */}
+                          <div className="mt-4 space-y-1.5">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-slate-500 dark:text-slate-400 font-medium">Tiến độ</span>
+                              <span className="text-indigo-600 dark:text-indigo-400 font-bold">{Math.round(course.progressPercent || 0)}%</span>
+                            </div>
+                            <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                              <div 
+                                className="bg-indigo-600 dark:bg-indigo-500 h-full rounded-full transition-all duration-300" 
+                                style={{ width: `${course.progressPercent || 0}%` }}
+                              ></div>
+                            </div>
+                          </div>
+
+                          <div className="mt-auto pt-4 flex items-center justify-between">
                             <div className="flex items-center text-sm font-medium text-indigo-600 dark:text-indigo-400">
                               <PlayCircle size={18} className="mr-1.5" /> Tiếp tục học
                             </div>

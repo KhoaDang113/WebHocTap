@@ -67,6 +67,12 @@ export interface CourseDTO {
   updatedAt: string
   inviteCode?: string
   isPrivate?: boolean
+  progressPercent?: number // Add this line
+}
+
+export interface CourseProgressDTO {
+  completedLessonIds: string[]
+  progressPercent: number
 }
 
 export interface CategoryDTO {

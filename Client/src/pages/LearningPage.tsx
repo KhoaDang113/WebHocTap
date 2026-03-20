@@ -1,9 +1,15 @@
 import { useParams, Navigate, Link } from 'react-router-dom'
 import { useState } from 'react'
-import { useCourse, useLessons, useEnrollmentStatus, useAuth } from '@/hooks'
+import { useCourse, useLessons, useEnrollmentStatus, useAuth, useCourseProgress, useCompleteLesson } from '@/hooks'
 import { Button } from '@/components/ui/button'
-import { Loader2, AlertCircle, BookOpen, PlayCircle, ChevronLeft } from 'lucide-react'
+import { Loader2, AlertCircle, BookOpen, PlayCircle, ChevronLeft, CheckCircle2 } from 'lucide-react'
 import QuizView from '@/components/QuizView'
+
+// Safe toast fallback
+const toast = {
+  success: (msg: string) => console.log('Toast Success:', msg),
+  error: (msg: string) => console.error('Toast Error:', msg)
+}
 
 export default function LearningPage() {
   const { courseId } = useParams<{ courseId: string }>()
@@ -27,6 +33,12 @@ export default function LearningPage() {
     isLoading: isEnrollmentLoading,
     isError: isEnrollmentError,
   } = useEnrollmentStatus(courseId)
+
+  const {
+    data: progress,
+  } = useCourseProgress(courseId)
+
+  const completeLessonMutation = useCompleteLesson(courseId)
 
   if (!user) {
     return <Navigate to="/login" replace />
@@ -68,9 +80,23 @@ export default function LearningPage() {
       sortedLessons[0] ||
       null
 
+  const completedLessonIds = progress?.completedLessonIds || []
+  const progressPercent = progress?.progressPercent || 0
+
+  const handleCompleteLesson = async () => {
+    if (!activeLesson) return
+    try {
+      await completeLessonMutation.mutateAsync(activeLesson.id)
+      toast?.success('Đã hoàn thành bài học!')
+    } catch (error) {
+      console.error('Failed to complete lesson', error)
+      toast?.error('Không thể hoàn thành bài học')
+    }
+  }
+
   return (
     <div className="bg-slate-50 min-h-screen">
-      <div className="border-b border-slate-200 bg-white">
+      <div className="border-b border-slate-200 bg-white sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link to={`/courses/${course.id}`}>
@@ -87,12 +113,24 @@ export default function LearningPage() {
               </h1>
             </div>
           </div>
+
+          <div className="flex items-center gap-4 flex-1 max-w-xs md:max-w-md">
+            <div className="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden">
+              <div 
+                className="bg-green-500 h-full transition-all duration-500" 
+                style={{ width: `${progressPercent}%` }}
+              ></div>
+            </div>
+            <span className="text-sm font-bold text-slate-700 min-w-[3rem] text-right">
+              {Math.round(progressPercent)}%
+            </span>
+          </div>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-6 lg:py-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
         <aside className="lg:col-span-3">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden sticky top-24">
             <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <BookOpen className="h-4 w-4 text-indigo-600" />
@@ -115,33 +153,48 @@ export default function LearningPage() {
                   Chưa có bài học nào trong khóa này.
                 </div>
               ) : (
-                sortedLessons.map((lesson, index) => (
-                  <div
-                    key={lesson.id}
-                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer border-l-2 ${
-                      activeLesson && activeLesson.id === lesson.id && !activeQuizId
-                        ? 'bg-indigo-50 border-indigo-500'
-                        : 'border-transparent hover:bg-slate-50'
-                    }`}
-                    onClick={() => {
-                      setActiveLessonId(lesson.id)
-                      setActiveQuizId(null)
-                    }}
-                  >
-                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-xs font-semibold text-slate-600">
-                      {String(index + 1).padStart(2, '0')}
+                sortedLessons.map((lesson, index) => {
+                  const isCompleted = completedLessonIds.includes(lesson.id)
+                  return (
+                    <div
+                      key={lesson.id}
+                      className={`flex items-center gap-3 px-4 py-3 cursor-pointer border-l-2 ${
+                        activeLesson && activeLesson.id === lesson.id && !activeQuizId
+                          ? 'bg-indigo-50 border-indigo-500'
+                          : 'border-transparent hover:bg-slate-50'
+                      }`}
+                      onClick={() => {
+                        setActiveLessonId(lesson.id)
+                        setActiveQuizId(null)
+                      }}
+                    >
+                      <div className="flex-shrink-0">
+                        {isCompleted ? (
+                          <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600">
+                            <CheckCircle2 className="h-4 w-4" />
+                          </div>
+                        ) : (
+                          <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-xs font-semibold text-slate-600">
+                            {String(index + 1).padStart(2, '0')}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-grow">
+                        <p className={`text-[13px] font-semibold ${isCompleted ? 'text-slate-500 line-through' : 'text-slate-800'} line-clamp-2`}>
+                          {lesson.title}
+                        </p>
+                        <p className="text-[11px] text-slate-500 line-clamp-2">
+                          {lesson.content || 'Nội dung bài học'}
+                        </p>
+                      </div>
+                      {isCompleted ? (
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <PlayCircle className="h-4 w-4 text-slate-400" />
+                      )}
                     </div>
-                    <div className="flex-grow">
-                      <p className="text-[13px] font-semibold text-slate-800 line-clamp-2">
-                        {lesson.title}
-                      </p>
-                      <p className="text-[11px] text-slate-500 line-clamp-2">
-                        {lesson.content || 'Nội dung bài học'}
-                      </p>
-                    </div>
-                    <PlayCircle className="h-4 w-4 text-slate-400" />
-                  </div>
-                ))
+                  )
+                })
               )}
 
               {/* Mock Quiz Item for testing */}
@@ -206,6 +259,30 @@ export default function LearningPage() {
               {activeLesson && activeLesson.content && (
                 <div className="prose prose-slate max-w-none text-slate-700">
                   {activeLesson.content}
+                </div>
+              )}
+
+              {/* Complete Lesson Button */}
+              {activeLesson && !activeQuizId && (
+                <div className="border-t border-slate-100 pt-6 mt-6 flex justify-end">
+                  <Button
+                    onClick={handleCompleteLesson}
+                    disabled={completedLessonIds.includes(activeLesson.id) || completeLessonMutation.isPending}
+                    className={`${
+                      completedLessonIds.includes(activeLesson.id)
+                        ? 'bg-green-500 hover:bg-green-600 text-white'
+                        : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                    }`}
+                  >
+                    {completeLessonMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : completedLessonIds.includes(activeLesson.id) ? (
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                    ) : null}
+                    {completedLessonIds.includes(activeLesson.id)
+                      ? 'Đã hoàn thành'
+                      : 'Hoàn thành bài học'}
+                  </Button>
                 </div>
               )}
             </div>

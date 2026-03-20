@@ -27,4 +27,6 @@ export {
 export {
   useEnrollmentStatus,
   useEnrollInCourse,
+  useCourseProgress,
+  useCompleteLesson,
 } from './useEnrollment'
