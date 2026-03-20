@@ -28,4 +28,6 @@ public class CourseDTO {
     
     @JsonProperty("isPrivate")
     private boolean isPrivate;
+
+    private Double progressPercent; // Add this line
 }

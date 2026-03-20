@@ -21,6 +21,7 @@ public class EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
+    private final com.example.WebHocTap.service.LessonProgressService lessonProgressService; // Add this line
 
     public Enrollment enroll(String courseId) {
         String userId = getCurrentUserId();
@@ -86,6 +87,10 @@ public class EnrollmentService {
             dto.setUpdatedAt(course.getUpdatedAt());
             dto.setInviteCode(course.getInviteCode());
             dto.setPrivate(course.isPrivate());
+            
+            // Set progress percent
+            dto.setProgressPercent(lessonProgressService.getProgressPercentForUser(userId, course.getId()));
+            
             return dto;
         }).collect(java.util.stream.Collectors.toList());
     }
