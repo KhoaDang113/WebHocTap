@@ -3,11 +3,13 @@ import { useState } from 'react'
 import { useCourse, useLessons, useEnrollmentStatus, useAuth } from '@/hooks'
 import { Button } from '@/components/ui/button'
 import { Loader2, AlertCircle, BookOpen, PlayCircle, ChevronLeft } from 'lucide-react'
+import QuizView from '@/components/QuizView'
 
 export default function LearningPage() {
   const { courseId } = useParams<{ courseId: string }>()
   const { user } = useAuth()
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null)
+  const [activeQuizId, setActiveQuizId] = useState<string | null>(null)
 
   const {
     data: course,
@@ -60,10 +62,11 @@ export default function LearningPage() {
   }
 
   const sortedLessons = [...lessons].sort((a, b) => a.orderIndex - b.orderIndex)
-  const activeLesson =
-    sortedLessons.find((lesson) => lesson.id === activeLessonId) ||
-    sortedLessons[0] ||
-    null
+  const activeLesson = activeQuizId
+    ? null
+    : sortedLessons.find((lesson) => lesson.id === activeLessonId) ||
+      sortedLessons[0] ||
+      null
 
   return (
     <div className="bg-slate-50 min-h-screen">
@@ -116,11 +119,14 @@ export default function LearningPage() {
                   <div
                     key={lesson.id}
                     className={`flex items-center gap-3 px-4 py-3 cursor-pointer border-l-2 ${
-                      activeLesson && activeLesson.id === lesson.id
+                      activeLesson && activeLesson.id === lesson.id && !activeQuizId
                         ? 'bg-indigo-50 border-indigo-500'
                         : 'border-transparent hover:bg-slate-50'
                     }`}
-                    onClick={() => setActiveLessonId(lesson.id)}
+                    onClick={() => {
+                      setActiveLessonId(lesson.id)
+                      setActiveQuizId(null)
+                    }}
                   >
                     <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-xs font-semibold text-slate-600">
                       {String(index + 1).padStart(2, '0')}
@@ -137,13 +143,45 @@ export default function LearningPage() {
                   </div>
                 ))
               )}
+
+              {/* Mock Quiz Item for testing */}
+              {sortedLessons.length > 0 && (
+                <div
+                  className={`flex items-center gap-3 px-4 py-3 cursor-pointer border-l-2 mt-2 border-t border-slate-100 ${
+                    activeQuizId
+                      ? 'bg-indigo-50 border-indigo-500'
+                      : 'border-transparent hover:bg-slate-50'
+                  }`}
+                  onClick={() => {
+                    setActiveQuizId('mock-quiz-123') // Replace with actual quiz ID later
+                    setActiveLessonId(null)
+                  }}
+                >
+                  <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 text-xs font-semibold">
+                    ❓
+                  </div>
+                  <div className="flex-grow">
+                    <p className="text-[13px] font-semibold text-slate-800 line-clamp-2">
+                      Bài kiểm tra kết thúc
+                    </p>
+                    <p className="text-[11px] text-slate-500 line-clamp-2">
+                      Kiểm tra kiến thức khóa học
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </aside>
 
         <section className="lg:col-span-9">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-            {activeLesson && (activeLesson.videoUrl || activeLesson.imageUrl) && (
+          {activeQuizId ? (
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-[calc(100vh-120px)] flex flex-col">
+              <QuizView quizId={activeQuizId} />
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+              {activeLesson && (activeLesson.videoUrl || activeLesson.imageUrl) && (
               <div className="aspect-video bg-black flex items-center justify-center">
                 {activeLesson.videoUrl ? (
                   <video
@@ -172,6 +210,7 @@ export default function LearningPage() {
               )}
             </div>
           </div>
+          )}
         </section>
       </div>
     </div>

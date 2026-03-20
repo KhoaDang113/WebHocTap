@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,4 +24,8 @@ public class CourseDTO {
     private CourseStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String inviteCode;
+    
+    @JsonProperty("isPrivate")
+    private boolean isPrivate;
 }

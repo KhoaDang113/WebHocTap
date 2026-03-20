@@ -45,7 +45,7 @@ export default function CourseDetailPage() {
 
   const {
     mutateAsync: enroll,
-    isLoading: isEnrollLoading,
+    isPending: isEnrollLoading,
   } = useEnrollInCourse(id);
 
   const isEnrolled = !!enrollmentStatus?.isEnrolled;

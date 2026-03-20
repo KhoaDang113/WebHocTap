@@ -26,7 +26,7 @@ public class CourseController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CourseDTO>> getCourseById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<CourseDTO>> getCourseById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(courseService.getCourseById(id)));
     }
 
@@ -38,19 +38,25 @@ public class CourseController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
-    public ResponseEntity<ApiResponse<CourseDTO>> updateCourse(@PathVariable String id, @RequestBody CreateCourseRequest request) {
+    public ResponseEntity<ApiResponse<CourseDTO>> updateCourse(@PathVariable("id") String id, @RequestBody CreateCourseRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(courseService.updateCourse(id, request), "Course updated successfully"));
     }
 
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
-    public ResponseEntity<ApiResponse<CourseDTO>> updateCourseStatus(@PathVariable String id, @RequestBody UpdateCourseStatusRequest request) {
+    public ResponseEntity<ApiResponse<CourseDTO>> updateCourseStatus(@PathVariable("id") String id, @RequestBody UpdateCourseStatusRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(courseService.updateCourseStatus(id, request), "Course status updated successfully"));
+    }
+
+    @PatchMapping("/{id}/invite-code")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<ApiResponse<CourseDTO>> generateInviteCode(@PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(courseService.generateInviteCode(id), "Invite code generated successfully"));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
-    public ResponseEntity<ApiResponse<Void>> deleteCourse(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> deleteCourse(@PathVariable("id") String id) {
         courseService.deleteCourse(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "Course deleted successfully"));
     }

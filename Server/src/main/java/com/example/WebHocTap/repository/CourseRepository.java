@@ -12,4 +12,5 @@ public interface CourseRepository extends MongoRepository<Course, String> {
     List<Course> findByStatus(CourseStatus status);
     List<Course> findByCategoryId(String categoryId);
     List<Course> findByTitleContainingIgnoreCase(String title);
+    java.util.Optional<Course> findByInviteCode(String inviteCode);
 }

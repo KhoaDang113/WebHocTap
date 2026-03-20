@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Search, Filter, BookOpen, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import { useCourses, useCategories } from "@/hooks";
 import type { CourseDTO, CategoryDTO } from "@/types";
+import { enrollByCode } from "@/api/enrollmentApi";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,11 +23,30 @@ const formatPrice = (price: number) => {
 };
 
 export default function CoursesPage() {
+  const navigate = useNavigate();
   const { data: courses = [], isLoading: isCoursesLoading, isError: isCoursesError } = useCourses({ enabled: true });
   const { data: categories = [] } = useCategories();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [inviteCode, setInviteCode] = useState("");
+  const [joinLoading, setJoinLoading] = useState(false);
+
+  const handleJoinCourse = async () => {
+    if (!inviteCode.trim()) return;
+    try {
+      setJoinLoading(true);
+      const res = await enrollByCode(inviteCode.trim());
+      navigate(`/courses/${(res.data as any).courseId}`);
+    } catch (error: any) {
+      alert(error.response?.data?.message || "Không thể tham gia khóa học. Mã không hợp lệ hoặc bạn đã tham gia.");
+    } finally {
+      setJoinLoading(false);
+      setShowJoinModal(false);
+      setInviteCode("");
+    }
+  };
 
   const categoryMap = useMemo(
     () => Object.fromEntries(categories.map((cat: CategoryDTO) => [cat.id, cat.name])),
@@ -40,8 +60,9 @@ export default function CoursesPage() {
         course.description?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategory === "ALL" || course.categoryId === selectedCategory;
       const isPublished = course.status === "PUBLISHED";
+      const isPublic = !course.isPrivate;
       
-      return matchesSearch && matchesCategory && isPublished;
+      return matchesSearch && matchesCategory && isPublished && isPublic;
     });
   }, [courses, searchTerm, selectedCategory]);
 
@@ -124,13 +145,20 @@ export default function CoursesPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 mt-12">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
           <h2 className="text-2xl font-bold text-slate-900">
             {selectedCategory === "ALL" ? "Tất cả khóa học" : categoryMap[selectedCategory]}
             <span className="ml-3 text-sm font-medium text-slate-500 bg-slate-200 px-3 py-1 rounded-full uppercase">
               {filteredCourses.length} Kết quả
             </span>
           </h2>
+          <Button 
+            variant="outline" 
+            className="text-indigo-600 border-indigo-200 bg-indigo-50/50 hover:bg-indigo-100 font-semibold"
+            onClick={() => setShowJoinModal(true)}
+          >
+            Tham gia bằng mã
+          </Button>
         </div>
 
         {filteredCourses.length > 0 ? (
@@ -195,6 +223,43 @@ export default function CoursesPage() {
           </div>
         )}
       </div>
+
+      {/* Join Course Modal */}
+      {showJoinModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Tham gia bằng mã</h3>
+            <p className="text-slate-500 text-sm mb-6">
+              Nhập mã tham gia gồm 6-8 ký tự do giảng viên hoặc quản trị viên cung cấp để tham gia khóa học.
+            </p>
+            <input
+              type="text"
+              placeholder="VD: A1B2C3D4"
+              className="w-full px-4 py-3 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-medium text-center uppercase tracking-widest mb-6"
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+              autoFocus
+            />
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => { setShowJoinModal(false); setInviteCode(""); }}
+                disabled={joinLoading}
+              >
+                Hủy
+              </Button>
+              <Button 
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white"
+                onClick={handleJoinCourse}
+                disabled={!inviteCode.trim() || joinLoading}
+              >
+                {joinLoading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Tham gia ngay"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

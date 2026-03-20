@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks'
-import { LogIn, UserPlus, LogOut, User, Key, ChevronDown, Menu } from 'lucide-react'
+import { LogIn, UserPlus, LogOut, User, Key, ChevronDown, Menu, BookOpen } from 'lucide-react'
 
 const Navbar = () => {
     const location = useLocation()
@@ -124,6 +124,15 @@ const Navbar = () => {
                                     </Link>
                                     
                                     <Link 
+                                        to="/profile" 
+                                        className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                        onClick={() => setIsDropdownOpen(false)}
+                                    >
+                                        <BookOpen size={16} />
+                                        Khóa học của tôi
+                                    </Link>
+                                    
+                                    <Link 
                                         to="/change-password" 
                                         className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
                                         onClick={() => setIsDropdownOpen(false)}
@@ -213,6 +222,14 @@ const Navbar = () => {
                                 >
                                     <User size={16} />
                                     Hồ sơ cá nhân
+                                </Link>
+                                <Link 
+                                    to="/profile" 
+                                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg"
+                                    onClick={() => setIsMenuOpen(false)}
+                                >
+                                    <BookOpen size={16} />
+                                    Khóa học của tôi
                                 </Link>
                                 <Link 
                                     to="/change-password" 

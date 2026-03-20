@@ -47,6 +47,8 @@ public class CourseService {
         course.setCategoryId(request.getCategoryId());
         course.setInstructor(request.getInstructor());
         course.setStatus(request.getStatus() != null ? request.getStatus() : CourseStatus.DRAFT);
+        course.setInviteCode(java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        course.setPrivate(request.isPrivate());
 
         return toDTO(courseRepository.save(course));
     }
@@ -64,6 +66,7 @@ public class CourseService {
         if (request.getStatus() != null) {
             course.setStatus(request.getStatus());
         }
+        course.setPrivate(request.isPrivate());
 
         return toDTO(courseRepository.save(course));
     }
@@ -73,6 +76,14 @@ public class CourseService {
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Course not found with id: " + id));
 
         course.setStatus(request.getStatus());
+        return toDTO(courseRepository.save(course));
+    }
+
+    public CourseDTO generateInviteCode(String id) {
+        Course course = courseRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Course not found with id: " + id));
+
+        course.setInviteCode(java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         return toDTO(courseRepository.save(course));
     }
 
@@ -95,6 +106,8 @@ public class CourseService {
         dto.setStatus(course.getStatus());
         dto.setCreatedAt(course.getCreatedAt());
         dto.setUpdatedAt(course.getUpdatedAt());
+        dto.setInviteCode(course.getInviteCode());
+        dto.setPrivate(course.isPrivate());
         return dto;
     }
 }

@@ -65,6 +65,8 @@ export interface CourseDTO {
   status: CourseStatus
   createdAt: string
   updatedAt: string
+  inviteCode?: string
+  isPrivate?: boolean
 }
 
 export interface CategoryDTO {
@@ -83,6 +85,7 @@ export interface CoursePayload {
   categoryId: string
   instructor?: string
   status: CourseStatus
+  isPrivate?: boolean
 }
 
 // Lesson management
@@ -105,4 +108,41 @@ export interface LessonPayload {
   orderIndex: number
   videoUrl?: string
   imageUrl?: string
+}
+
+// Quiz management
+export interface AnswerDTO {
+  id: string
+  content: string
+}
+
+export interface QuestionDTO {
+  id: string
+  content: string
+  answers: AnswerDTO[]
+  isMultipleChoice?: boolean
+}
+
+export interface QuizDTO {
+  id: string
+  courseId: string
+  title: string
+  description?: string
+  timeLimit: number
+  questions?: QuestionDTO[]
+}
+
+export interface QuizAttemptDTO {
+  id: string
+  quizId: string
+  remainingTime: number
+  status: 'IN_PROGRESS' | 'COMPLETED' | 'EXPIRED'
+  score?: number
+}
+
+export interface SubmitQuizResponse {
+  score: number
+  passed: boolean
+  correctAnswers: number
+  totalQuestions: number
 }

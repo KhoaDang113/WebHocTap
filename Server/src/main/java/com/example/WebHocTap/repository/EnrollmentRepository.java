@@ -10,5 +10,6 @@ import java.util.Optional;
 public interface EnrollmentRepository extends MongoRepository<Enrollment, String> {
     boolean existsByUserIdAndCourseId(String userId, String courseId);
     Optional<Enrollment> findByUserIdAndCourseId(String userId, String courseId);
+    java.util.List<Enrollment> findByUserId(String userId);
 }
 

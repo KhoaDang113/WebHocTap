@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertCircle, Loader2, Pencil, Plus, Search, Trash2, Upload, Image as ImageIcon, FilePlus } from "lucide-react";
+import { AlertCircle, Loader2, Pencil, Plus, Search, Trash2, Upload, Image as ImageIcon, FilePlus, RefreshCw } from "lucide-react";
 import { uploadImage } from "@/api/uploadApi";
 import {
   useAuth,
@@ -10,6 +10,7 @@ import {
   useDeleteCourse,
   useUpdateCourse,
   useUpdateCourseStatus,
+  useGenerateInviteCode,
 } from "@/hooks";
 import type { CategoryDTO, CourseDTO, CoursePayload, CourseStatus } from "@/types";
 
@@ -21,6 +22,7 @@ type CourseFormState = {
   categoryId: string;
   instructor: string;
   status: CourseStatus;
+  isPrivate: boolean;
 };
 
 const DEFAULT_FORM: CourseFormState = {
@@ -31,6 +33,7 @@ const DEFAULT_FORM: CourseFormState = {
   categoryId: "",
   instructor: "",
   status: "DRAFT",
+  isPrivate: false,
 };
 
 const STATUS_OPTIONS: Array<{ value: CourseStatus; label: string }> = [
@@ -59,6 +62,7 @@ const toFormState = (course: CourseDTO): CourseFormState => ({
   categoryId: course.categoryId ?? "",
   instructor: course.instructor ?? "",
   status: course.status,
+  isPrivate: course.isPrivate ?? false,
 });
 
 const toPayload = (form: CourseFormState): CoursePayload => ({
@@ -69,6 +73,7 @@ const toPayload = (form: CourseFormState): CoursePayload => ({
   categoryId: form.categoryId,
   instructor: form.instructor.trim(),
   status: form.status,
+  isPrivate: form.isPrivate,
 });
 
 const getErrorMessage = (error: unknown, fallback: string) => {
@@ -90,6 +95,7 @@ export default function AdminCoursesPage() {
   const updateCourseMutation = useUpdateCourse();
   const updateStatusMutation = useUpdateCourseStatus();
   const deleteCourseMutation = useDeleteCourse();
+  const generateInviteCodeMutation = useGenerateInviteCode();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | CourseStatus>("ALL");
@@ -121,7 +127,7 @@ export default function AdminCoursesPage() {
   }, [courses, searchTerm, statusFilter, categoryFilter]);
 
   const isSubmitting = createCourseMutation.isPending || updateCourseMutation.isPending;
-  const isBusy = isSubmitting || updateStatusMutation.isPending || deleteCourseMutation.isPending;
+  const isBusy = isSubmitting || updateStatusMutation.isPending || deleteCourseMutation.isPending || generateInviteCodeMutation.isPending;
 
   const openCreateForm = () => {
     setEditingCourse(null);
@@ -235,6 +241,17 @@ export default function AdminCoursesPage() {
     }
   };
 
+  const handleGenerateInviteCode = async (course: CourseDTO) => {
+    try {
+      if (course.inviteCode) {
+        if (!window.confirm("Khóa học đã có mã. Bạn có chắc muốn tạo lại mã mới? Mã cũ sẽ mất hiệu lực.")) return;
+      }
+      await generateInviteCodeMutation.mutateAsync(course.id);
+    } catch {
+      setFormError("Không thể tạo mã tham gia mới.");
+    }
+  };
+
   if (!canManageCourse) {
     return (
       <div className="p-6 flex items-center justify-center min-h-screen">
@@ -336,6 +353,7 @@ export default function AdminCoursesPage() {
                 <th className="py-4 px-6 font-semibold">Khóa học</th>
                 <th className="py-4 px-6 font-semibold">Danh mục</th>
                 <th className="py-4 px-6 font-semibold">Giá</th>
+                <th className="py-4 px-6 font-semibold">Mã tham gia</th>
                 <th className="py-4 px-6 font-semibold">Trạng thái</th>
                 <th className="py-4 px-6 font-semibold text-right">Hành động</th>
               </tr>
@@ -343,7 +361,7 @@ export default function AdminCoursesPage() {
             <tbody className="divide-y divide-slate-100">
               {filteredCourses.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-8 px-6 text-center text-slate-500">
+                  <td colSpan={6} className="py-8 px-6 text-center text-slate-500">
                     Chưa có khóa học phù hợp với bộ lọc hiện tại.
                   </td>
                 </tr>
@@ -352,13 +370,45 @@ export default function AdminCoursesPage() {
               {filteredCourses.map((course) => (
                 <tr key={course.id} className="hover:bg-slate-50 transition-colors">
                   <td className="py-4 px-6">
-                    <div className="max-w-95">
-                      <p className="font-semibold text-slate-800 line-clamp-1">{course.title}</p>
-                      <p className="text-xs text-slate-500 mt-1 line-clamp-2">{course.description || "Không có mô tả"}</p>
+                    <div className="max-w-95 flex flex-col gap-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-semibold text-slate-800 line-clamp-1">{course.title}</p>
+                        {course.isPrivate && (
+                          <span className="bg-slate-100 text-slate-600 border border-slate-200 text-[10px] px-1.5 py-0.5 rounded shadow-sm flex-shrink-0 uppercase font-bold tracking-widest leading-none flex items-center h-4">ẨN</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500 line-clamp-2 leading-tight">{course.description || "Không có mô tả"}</p>
                     </div>
                   </td>
                   <td className="py-4 px-6 text-sm text-slate-600">{categoryMap[course.categoryId] || "Chưa phân loại"}</td>
                   <td className="py-4 px-6 font-medium text-slate-700">{Number(course.price || 0).toLocaleString("vi-VN")} đ</td>
+                  <td className="py-4 px-6 text-sm">
+                    {course.inviteCode ? (
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded font-medium border border-blue-100">
+                          {course.inviteCode}
+                        </span>
+                        <button
+                          type="button"
+                          className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          onClick={() => handleGenerateInviteCode(course)}
+                          disabled={isBusy}
+                          title="Tạo lại mã"
+                        >
+                          <RefreshCw size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleGenerateInviteCode(course)}
+                        disabled={isBusy}
+                        className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded transition-colors flex items-center gap-1 w-max"
+                      >
+                        <RefreshCw size={12} /> Tạo mã
+                      </button>
+                    )}
+                  </td>
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_STYLE[course.status]}`}>
@@ -496,6 +546,18 @@ export default function AdminCoursesPage() {
                     placeholder="Tên giảng viên"
                   />
                 </label>
+
+                <div className="flex flex-col justify-end pb-2 md:col-span-2">
+                  <label className="flex items-center gap-2 cursor-pointer w-max">
+                    <input
+                      type="checkbox"
+                      checked={formState.isPrivate}
+                      onChange={(e) => setFormState((prev: CourseFormState) => ({ ...prev, isPrivate: e.target.checked }))}
+                      className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-slate-300"
+                    />
+                    <span className="text-sm font-medium text-slate-700">Khóa học riêng tư (ẩn khỏi danh sách hiển thị)</span>
+                  </label>
+                </div>
               </div>
 
               <label className="flex flex-col gap-1 text-sm text-slate-700">

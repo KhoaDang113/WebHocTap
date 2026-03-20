@@ -15,6 +15,7 @@ export {
   useUpdateCourse,
   useUpdateCourseStatus,
   useDeleteCourse,
+  useGenerateInviteCode,
 } from './useCourses'
 export {
   useAllLessons,

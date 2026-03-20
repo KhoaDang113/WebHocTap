@@ -13,6 +13,7 @@ import {
   AdminCategoryPage,
   AdminLessonsPage,
   AdminCreateLessonPage,
+  AdminQuizzesPage,
 } from '@/pages/admin'
 
 const queryClient = new QueryClient({
@@ -38,6 +39,7 @@ function App() {
               <Route path="courses" element={<AdminCoursesPage />} />
               <Route path="courses/:courseId/lessons/create" element={<AdminCreateLessonPage />} />
               <Route path="lessons" element={<AdminLessonsPage />} />
+              <Route path="quizzes" element={<AdminQuizzesPage />} />
               <Route path="live" element={<AdminLivePage />} />
               <Route path="settings" element={<AdminSettingsPage />} />
             </Route>

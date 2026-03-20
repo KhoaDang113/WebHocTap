@@ -12,6 +12,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -39,5 +41,10 @@ public class Course {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
+    
+    private String inviteCode;
+    
+    @JsonProperty("isPrivate")
+    private boolean isPrivate;
 }
 

@@ -22,15 +22,26 @@ public class EnrollmentController {
     private final EnrollmentService enrollmentService;
 
     @PostMapping("/courses/{courseId}")
-    public ResponseEntity<ApiResponse<Enrollment>> enroll(@PathVariable String courseId) {
+    public ResponseEntity<ApiResponse<Enrollment>> enroll(@PathVariable("courseId") String courseId) {
         Enrollment enrollment = enrollmentService.enroll(courseId);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(enrollment, "Enrolled successfully"));
     }
 
     @GetMapping("/courses/{courseId}/check")
-    public ResponseEntity<ApiResponse<Map<String, Boolean>>> checkEnrollment(@PathVariable String courseId) {
+    public ResponseEntity<ApiResponse<Map<String, Boolean>>> checkEnrollment(@PathVariable("courseId") String courseId) {
         boolean enrolled = enrollmentService.isEnrolled(courseId);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("isEnrolled", enrolled)));
+    }
+
+    @PostMapping("/join-by-code/{code}")
+    public ResponseEntity<ApiResponse<Enrollment>> enrollByCode(@PathVariable("code") String code) {
+        Enrollment enrollment = enrollmentService.enrollByCode(code);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(enrollment, "Joined implicitly via invite code"));
+    }
+
+    @GetMapping("/my-courses")
+    public ResponseEntity<ApiResponse<java.util.List<com.example.WebHocTap.dto.CourseDTO>>> getMyCourses() {
+        return ResponseEntity.ok(ApiResponse.ok(enrollmentService.getMyEnrolledCourses()));
     }
 }
 

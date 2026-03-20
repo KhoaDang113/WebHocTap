@@ -67,6 +67,52 @@ public class QuizService {
                 .collect(Collectors.toList());
     }
 
+    public List<QuizDTO> getAllQuizzes() {
+        return quizRepository.findAll().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public QuizDTO updateQuiz(String id, CreateQuizRequest request) {
+        Quiz quiz = quizRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Quiz not found with id: " + id));
+        
+        quiz.setCourseId(request.getCourseId());
+        quiz.setTitle(request.getTitle());
+        quiz.setTimeLimit(request.getTimeLimit());
+        
+        Quiz updatedQuiz = quizRepository.save(quiz);
+
+        if (request.getQuestions() != null) {
+            List<Question> oldQuestions = questionRepository.findByQuizId(id);
+            for (Question q : oldQuestions) {
+                List<Answer> oldAnswers = answerRepository.findByQuestionId(q.getId());
+                answerRepository.deleteAll(oldAnswers);
+            }
+            questionRepository.deleteAll(oldQuestions);
+
+            for (CreateQuestionRequest questionReq : request.getQuestions()) {
+                createQuestion(updatedQuiz.getId(), questionReq);
+            }
+        }
+
+        return getQuizById(updatedQuiz.getId());
+    }
+
+    public void deleteQuiz(String id) {
+        Quiz quiz = quizRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Quiz not found with id: " + id));
+
+        List<Question> oldQuestions = questionRepository.findByQuizId(id);
+        for (Question q : oldQuestions) {
+            List<Answer> oldAnswers = answerRepository.findByQuestionId(q.getId());
+            answerRepository.deleteAll(oldAnswers);
+        }
+        questionRepository.deleteAll(oldQuestions);
+
+        quizRepository.delete(quiz);
+    }
+
     /**
      * Bắt đầu làm quiz: nếu đã có attempt thì trả lại attempt đó (không reset timer),
      * nếu chưa có thì tạo mới và set startTime/endTime.

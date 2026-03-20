@@ -25,12 +25,12 @@ public class LessonController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<LessonDTO>> getLessonById(@PathVariable String id) {   
+    public ResponseEntity<ApiResponse<LessonDTO>> getLessonById(@PathVariable("id") String id) {   
         return ResponseEntity.ok(ApiResponse.ok(lessonService.getLessonById(id)));
     }
 
     @GetMapping("/course/{courseId}")
-    public ResponseEntity<ApiResponse<List<LessonDTO>>> getLessonsByCourse(@PathVariable String courseId) {
+    public ResponseEntity<ApiResponse<List<LessonDTO>>> getLessonsByCourse(@PathVariable("courseId") String courseId) {
         return ResponseEntity.ok(ApiResponse.ok(lessonService.getLessonsByCourse(courseId)));   
     }
 
@@ -42,13 +42,13 @@ public class LessonController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
-    public ResponseEntity<ApiResponse<LessonDTO>> updateLesson(@PathVariable String id, @RequestBody LessonModel model) {
+    public ResponseEntity<ApiResponse<LessonDTO>> updateLesson(@PathVariable("id") String id, @RequestBody LessonModel model) {
         return ResponseEntity.ok(ApiResponse.ok(lessonService.updateLesson(id, model), "Lesson updated successfully"));        
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
-    public ResponseEntity<ApiResponse<Void>> deleteLesson(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> deleteLesson(@PathVariable("id") String id) {
         lessonService.deleteLesson(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "Lesson deleted successfully"));
     }
