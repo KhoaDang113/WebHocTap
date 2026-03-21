@@ -6,6 +6,7 @@ import {
   getCourses,
   updateCourse,
   updateCourseStatus,
+  generateInviteCode,
 } from '@/api/coursesApi'
 import type { CoursePayload, CourseStatus } from '@/types'
 
@@ -78,6 +79,17 @@ export const useDeleteCourse = () => {
 
   return useMutation({
     mutationFn: (courseId: string) => deleteCourse(courseId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: COURSES_QUERY_KEY })
+    },
+  })
+}
+
+export const useGenerateInviteCode = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (courseId: string) => generateInviteCode(courseId),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: COURSES_QUERY_KEY })
     },

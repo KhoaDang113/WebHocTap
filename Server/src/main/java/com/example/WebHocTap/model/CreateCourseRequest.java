@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,4 +20,7 @@ public class CreateCourseRequest {
     private String categoryId;
     private String instructor;
     private CourseStatus status;
+    
+    @JsonProperty("isPrivate")
+    private boolean isPrivate;
 }

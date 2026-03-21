@@ -15,6 +15,7 @@ export {
   useUpdateCourse,
   useUpdateCourseStatus,
   useDeleteCourse,
+  useGenerateInviteCode,
 } from './useCourses'
 export {
   useAllLessons,
@@ -26,4 +27,6 @@ export {
 export {
   useEnrollmentStatus,
   useEnrollInCourse,
+  useCourseProgress,
+  useCompleteLesson,
 } from './useEnrollment'

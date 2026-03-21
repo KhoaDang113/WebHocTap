@@ -34,6 +34,11 @@ export const updateCourseStatus = async (courseId: string, status: CourseStatus)
   return response.data.data
 }
 
+export const generateInviteCode = async (courseId: string): Promise<CourseDTO> => {
+  const response = await axiosClient.patch<ApiResponse<CourseDTO>>(`${COURSE_API_PATH}/${courseId}/invite-code`)
+  return response.data.data
+}
+
 export const deleteCourse = async (courseId: string): Promise<void> => {
   await axiosClient.delete<ApiResponse<null>>(`${COURSE_API_PATH}/${courseId}`)
 }

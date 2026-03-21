@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks";
-import { Edit, Save, X, Camera, Mail, User as UserIcon, Calendar, MapPin, Phone, BookOpen, Clock, ShieldCheck } from "lucide-react";
+import { Edit, Save, X, Camera, Mail, User as UserIcon, Calendar, MapPin, Phone, BookOpen, Clock, ShieldCheck, PlayCircle } from "lucide-react";
+import { Link } from "react-router-dom";
+import { getMyCourses } from "@/api/enrollmentApi";
+import type { CourseDTO } from "@/types";
 
 export function ProfilePage() {
   const { user } = useAuth();
@@ -41,6 +44,26 @@ export function ProfilePage() {
     setFormData(profileData);
     setIsEditing(false);
   };
+
+  const [myCourses, setMyCourses] = useState<CourseDTO[]>([]);
+  const [loadingCourses, setLoadingCourses] = useState(false);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setLoadingCourses(true);
+        const courses = await getMyCourses();
+        setMyCourses(courses);
+      } catch (error) {
+        console.error("Failed to fetch my courses", error);
+      } finally {
+        setLoadingCourses(false);
+      }
+    };
+    if (user && !isEditing) {
+      fetchCourses();
+    }
+  }, [user, isEditing]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0f0f19] pt-24 pb-12 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
@@ -238,24 +261,94 @@ export function ProfilePage() {
         
         {/* Course Progress / Activity Summary (Static demo) */}
         {!isEditing && (
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 sm:p-8">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Tổng quan học tập</h3>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20">
-                <div className="text-blue-600 dark:text-blue-400 font-semibold mb-1">Khóa học đã đăng ký</div>
-                <div className="text-3xl font-bold text-slate-900 dark:text-white">12</div>
-              </div>
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 sm:p-8">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Tổng quan học tập</h3>
               
-              <div className="p-4 rounded-xl bg-green-50 dark:bg-green-500/10 border border-green-100 dark:border-green-500/20">
-                <div className="text-green-600 dark:text-green-400 font-semibold mb-1">Khóa học hoàn thành</div>
-                <div className="text-3xl font-bold text-slate-900 dark:text-white">8</div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20">
+                  <div className="text-blue-600 dark:text-blue-400 font-semibold mb-1">Khóa học đã đăng ký</div>
+                  <div className="text-3xl font-bold text-slate-900 dark:text-white">{myCourses.length}</div>
+                </div>
+                
+                <div className="p-4 rounded-xl bg-green-50 dark:bg-green-500/10 border border-green-100 dark:border-green-500/20">
+                  <div className="text-green-600 dark:text-green-400 font-semibold mb-1">Khóa học hoàn thành</div>
+                  <div className="text-3xl font-bold text-slate-900 dark:text-white">0</div>
+                </div>
+                
+                <div className="p-4 rounded-xl bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20">
+                  <div className="text-purple-600 dark:text-purple-400 font-semibold mb-1">Điểm trung bình</div>
+                  <div className="text-3xl font-bold text-slate-900 dark:text-white">0.0</div>
+                </div>
               </div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 sm:p-8 mt-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                <BookOpen className="text-indigo-600" />
+                Khóa học của tôi
+              </h3>
               
-              <div className="p-4 rounded-xl bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20">
-                <div className="text-purple-600 dark:text-purple-400 font-semibold mb-1">Điểm trung bình</div>
-                <div className="text-3xl font-bold text-slate-900 dark:text-white">8.5</div>
-              </div>
+              {loadingCourses ? (
+                <div className="flex justify-center py-8">
+                  <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : myCourses.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {myCourses.map((course) => (
+                    <Link to={`/courses/${course.id}`} key={course.id} className="block group">
+                      <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md transition-all h-full flex flex-col bg-white dark:bg-slate-800/50">
+                        <div className="h-40 bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
+                          {course.thumbnailUrl ? (
+                            <img src={course.thumbnailUrl} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-slate-400 bg-slate-200 dark:bg-slate-800/80">Không có ảnh</div>
+                          )}
+                          <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
+                          {course.isPrivate && (
+                            <span className="absolute top-2 right-2 bg-slate-900/80 text-white text-[10px] uppercase font-bold px-2 py-1 rounded backdrop-blur-sm">Ẩn</span>
+                          )}
+                        </div>
+                        <div className="p-5 flex-1 flex flex-col">
+                          <h4 className="font-semibold text-slate-900 dark:text-white line-clamp-2 leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{course.title}</h4>
+                          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 line-clamp-2">{course.description || "Danh mục khóa học"}</p>
+                          
+                          {/* Learning Progress Bar */}
+                          <div className="mt-4 space-y-1.5">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-slate-500 dark:text-slate-400 font-medium">Tiến độ</span>
+                              <span className="text-indigo-600 dark:text-indigo-400 font-bold">{Math.round(course.progressPercent || 0)}%</span>
+                            </div>
+                            <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                              <div 
+                                className="bg-indigo-600 dark:bg-indigo-500 h-full rounded-full transition-all duration-300" 
+                                style={{ width: `${course.progressPercent || 0}%` }}
+                              ></div>
+                            </div>
+                          </div>
+
+                          <div className="mt-auto pt-4 flex items-center justify-between">
+                            <div className="flex items-center text-sm font-medium text-indigo-600 dark:text-indigo-400">
+                              <PlayCircle size={18} className="mr-1.5" /> Tiếp tục học
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 px-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+                  <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <BookOpen className="w-8 h-8 text-slate-400" />
+                  </div>
+                  <h4 className="text-lg font-medium text-slate-700 dark:text-slate-300 mb-2">Chưa tham gia khóa học nào</h4>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm max-w-sm mx-auto">Bạn chưa đăng ký khóa học nào. Khám phá hàng trăm khóa học thú vị trên nền tảng ngay hôm nay!</p>
+                  <Link to="/courses" className="mt-6 inline-flex items-center justify-center font-medium text-white bg-indigo-600 hover:bg-indigo-700 px-6 py-2.5 rounded-lg shadow-md transition-colors hover:shadow-lg">
+                    Khám phá khóa học
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { AlertCircle, Loader2, ArrowLeft, Save, Upload, Video, Image as ImageIcon, X } from "lucide-react";
+import { AlertCircle, Loader2, ArrowLeft, Save, Video, Image as ImageIcon, X } from "lucide-react";
 import { useCreateLesson } from "@/hooks";
 import { uploadImage, uploadVideo } from "@/api/uploadApi";
 import type { LessonPayload } from "@/types";
