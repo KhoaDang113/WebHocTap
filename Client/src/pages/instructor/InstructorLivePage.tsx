@@ -1,25 +1,47 @@
 import axios from "axios";
-import { useState } from "react";
-import { Video, Plus, Loader2, AlertCircle, ExternalLink } from "lucide-react";
+import { useState, useMemo } from "react";
+import {
+  Video,
+  Plus,
+  Loader2,
+  AlertCircle,
+  ExternalLink,
+  Trash2,
+} from "lucide-react";
 import {
   useAuth,
   useCourses,
   useLiveSessions,
   useCreateLiveSession,
 } from "@/hooks";
+import { endLiveSession } from "@/api/liveSessionApi";
+import { useQueryClient } from "@tanstack/react-query";
 import type { CourseDTO } from "@/types";
 
-export default function AdminLivePage() {
+export default function InstructorLivePage() {
   const { user } = useAuth();
-  const canManageLive = user?.role === "ADMIN" || user?.role === "TEACHER";
+  const isTeacher = user?.role === "TEACHER";
+  const queryClient = useQueryClient();
 
-  const { data: courses = [] } = useCourses({ enabled: canManageLive });
+  // Chỉ lấy các buổi đang ACTIVE cho giảng viên
+  const { data: allCourses = [] } = useCourses({ enabled: isTeacher });
   const {
     data: sessions = [],
     isLoading,
     isError,
     error,
-  } = useLiveSessions({ enabled: canManageLive });
+  } = useLiveSessions({
+    enabled: isTeacher,
+  });
+
+  // Chỉ lấy các khóa học của chính giảng viên này
+  const instructorCourses = useMemo(() => {
+    return allCourses.filter(
+      (course) =>
+        course.instructor === user?.username || course.instructor === user?.id,
+    );
+  }, [allCourses, user]);
+
   const createMutation = useCreateLiveSession();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -31,8 +53,25 @@ export default function AdminLivePage() {
     courseId: "",
   });
 
+  const handleEndSession = async (sessionId: string, title: string) => {
+    if (
+      !globalThis.confirm(
+        `Bạn có chắc muốn kết thúc buổi live "${title}" không?`,
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await endLiveSession(sessionId);
+      queryClient.invalidateQueries({ queryKey: ["live-sessions"] });
+    } catch {
+      alert("Không thể kết thúc buổi live. Vui lòng thử lại.");
+    }
+  };
+
   const getCourseName = (courseId: string) => {
-    const course = courses.find((c: CourseDTO) => c.id === courseId);
+    const course = allCourses.find((c: CourseDTO) => c.id === courseId);
     return course ? course.title : "Khóa học không xác định";
   };
 
@@ -62,7 +101,7 @@ export default function AdminLivePage() {
     }
   };
 
-  if (!canManageLive) {
+  if (!isTeacher) {
     return (
       <div className="p-6 flex justify-center mt-20">
         <p className="text-slate-600">Bạn không có quyền truy cập trang này.</p>
@@ -74,14 +113,16 @@ export default function AdminLivePage() {
     <div className="p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Lớp học Live</h1>
+          <h1 className="text-2xl font-bold text-slate-800 text-indigo-600">
+            Lớp học Live
+          </h1>
           <p className="text-slate-500 text-sm mt-1">
-            Quản lý và giám sát các buổi học trực tuyến
+            Các buổi học đang trực tuyến của bạn
           </p>
         </div>
         <button
           onClick={() => setIsFormOpen(true)}
-          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm"
         >
           <Plus size={18} />
           <span>Tạo lớp học Live</span>
@@ -91,7 +132,7 @@ export default function AdminLivePage() {
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         {isLoading ? (
           <div className="p-12 flex flex-col items-center justify-center text-slate-500">
-            <Loader2 className="w-8 h-8 animate-spin mb-4 text-blue-500" />
+            <Loader2 className="w-8 h-8 animate-spin mb-4 text-indigo-500" />
             <p>Đang tải danh sách Live Sessions...</p>
           </div>
         ) : isError ? (
@@ -101,11 +142,11 @@ export default function AdminLivePage() {
           </div>
         ) : sessions.length === 0 ? (
           <div className="p-12 text-center">
-            <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Video className="w-8 h-8 text-blue-500" />
+            <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Video className="w-8 h-8 text-indigo-500" />
             </div>
             <h3 className="text-lg font-semibold text-slate-800 mb-2">
-              Chưa có lớp Live nào
+              Không có buổi Live nào đang diễn ra
             </h3>
             <p className="text-slate-500 text-sm">
               Hãy tạo một lớp học Live mới để bắt đầu giảng dạy.
@@ -126,7 +167,7 @@ export default function AdminLivePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {sessions.map((session) => (
+                {sessions.map((session: any) => (
                   <tr
                     key={session.id}
                     className="hover:bg-slate-50 transition-colors"
@@ -161,19 +202,26 @@ export default function AdminLivePage() {
                       </span>
                     </td>
                     <td className="py-4 px-6 text-right">
-                      {session.status === "ACTIVE" && (
-                        <div className="flex items-center justify-end gap-2">
-                          <a
-                            href={`/live/${session.id}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            title="Tham gia"
-                            className="p-2 rounded text-blue-600 hover:bg-blue-50 transition-colors"
-                          >
-                            <ExternalLink size={18} />
-                          </a>
-                        </div>
-                      )}
+                      <div className="flex items-center justify-end gap-2">
+                        <a
+                          href={`/live/${session.id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          title="Tham gia"
+                          className="p-2 rounded text-indigo-600 hover:bg-indigo-50 transition-colors"
+                        >
+                          <ExternalLink size={18} />
+                        </a>
+                        <button
+                          onClick={() =>
+                            handleEndSession(session.id, session.title)
+                          }
+                          title="Kết thúc"
+                          className="p-2 rounded text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -189,7 +237,7 @@ export default function AdminLivePage() {
           <div className="w-full max-w-lg bg-white rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="p-6 border-b border-slate-100">
               <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                <Video className="w-5 h-5 text-blue-600" />
+                <Video className="w-5 h-5 text-indigo-600" />
                 Tạo lớp học Live mới
               </h2>
             </div>
@@ -202,11 +250,11 @@ export default function AdminLivePage() {
                   onChange={(e) =>
                     setFormState({ ...formState, courseId: e.target.value })
                   }
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white"
                   required
                 >
                   <option value="">-- Chọn khóa học --</option>
-                  {courses.map((c: CourseDTO) => (
+                  {instructorCourses.map((c: CourseDTO) => (
                     <option key={c.id} value={c.id}>
                       {c.title}
                     </option>
@@ -223,7 +271,7 @@ export default function AdminLivePage() {
                     setFormState({ ...formState, title: e.target.value })
                   }
                   placeholder="Ví dụ: Giải đáp thắc mắc bài 1"
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                   required
                 />
               </label>
@@ -237,7 +285,7 @@ export default function AdminLivePage() {
                   }
                   placeholder="Nhập nội dung chính của buổi chia sẻ..."
                   rows={3}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
                 />
               </label>
 
@@ -260,7 +308,7 @@ export default function AdminLivePage() {
                 <button
                   type="submit"
                   disabled={createMutation.isPending}
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors shadow-sm flex items-center gap-2"
+                  className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors shadow-sm flex items-center gap-2"
                 >
                   {createMutation.isPending ? (
                     <>

@@ -42,6 +42,7 @@ public class SecurityConfig {
                         // Public endpoints
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
 
                         // Courses & Lessons & Quizzes: GET is accessible to all authenticated users
                         .requestMatchers(HttpMethod.GET, "/api/v1/courses/**").authenticated()
