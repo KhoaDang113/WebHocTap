@@ -69,6 +69,12 @@ public class SecurityConfig {
                         // Admin stats: ADMIN only
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
 
+                        // Instructor dashboard: ADMIN or TEACHER only
+                        .requestMatchers("/api/instructor/**").hasAnyRole("ADMIN", "TEACHER")
+
+                        // Interactions: any authenticated user
+                        .requestMatchers("/api/interactions/**").authenticated()
+
                         // Everything else requires authentication
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

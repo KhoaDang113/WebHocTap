@@ -140,7 +140,7 @@ public class OAuth2Service {
         String accessToken = jwtUtil.generateToken(user.getUsername());
         String refreshToken = createRefreshToken(user.getUsername());
 
-        return new AuthResponse(accessToken, refreshToken, user.getUsername(), user.getRole());
+        return new AuthResponse(user.getId(), accessToken, refreshToken, user.getUsername(), user.getRole());
     }
 
     private String createRefreshToken(String username) {

@@ -22,7 +22,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const stored = localStorage.getItem('user')
         if (stored) {
             try {
-                return JSON.parse(stored)
+                const parsed = JSON.parse(stored)
+                if (!parsed.id) {
+                    localStorage.removeItem('user')
+                    localStorage.removeItem('accessToken')
+                    localStorage.removeItem('refreshToken')
+                    window.location.reload()
+                    return null
+                }
+                return parsed
             } catch {
                 localStorage.removeItem('user')
             }
@@ -35,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const saveAuth = (data: AuthResponse) => {
         localStorage.setItem('accessToken', data.accessToken)
         localStorage.setItem('refreshToken', data.refreshToken)
-        const userData: User = { username: data.username, role: data.role }
+        const userData: User = { id: data.id, username: data.username, role: data.role }
         localStorage.setItem('user', JSON.stringify(userData))
         setUser(userData)
         return userData
@@ -54,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const res = await axiosClient.post<ApiResponse<{ message: string; email: string }>>('/auth/login', credentials)
             return res.data.data.email
         } catch (err: unknown) {
-            handleError(err, 'Ðãng nh?p th?t b?i')
+            handleError(err, 'ï¿½ï¿½ng nh?p th?t b?i')
             return ''
         } finally {
             setLoading(false)
@@ -68,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const res = await axiosClient.post<ApiResponse<AuthResponse>>('/auth/login/verify', info)
             return saveAuth(res.data.data)
         } catch (err: unknown) {
-            handleError(err, 'Xác th?c m? OTP th?t b?i')
+            handleError(err, 'Xï¿½c th?c m? OTP th?t b?i')
         } finally {
             setLoading(false)
         }
@@ -93,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const res = await axiosClient.post<ApiResponse<AuthResponse>>('/auth/register/verify', info)
             saveAuth(res.data.data)
         } catch (err: unknown) {
-            handleError(err, 'Xác th?c m? OTP th?t b?i')
+            handleError(err, 'Xï¿½c th?c m? OTP th?t b?i')
         } finally {
             setLoading(false)
         }
@@ -106,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const res = await axiosClient.post<ApiResponse<AuthResponse>>('/auth/oauth2/google', { idToken })
             return saveAuth(res.data.data)
         } catch (err: unknown) {
-            handleError(err, 'Ðãng nh?p v?i Google th?t b?i')
+            handleError(err, 'ï¿½ï¿½ng nh?p v?i Google th?t b?i')
         } finally {
             setLoading(false)
         }

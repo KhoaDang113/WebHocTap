@@ -19,6 +19,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { FavoriteButton } from "@/components/ui/FavoriteButton";
+import { ReviewSystem } from "@/components/ui/ReviewSystem";
 
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -128,9 +130,12 @@ export default function CourseDetailPage() {
                 )}
               </div>
               
-              <h1 className="text-3xl lg:text-4xl font-extrabold text-slate-900 mb-6 leading-tight">
-                {course.title}
-              </h1>
+              <div className="flex items-start justify-between mb-6">
+                <h1 className="text-3xl lg:text-4xl font-extrabold text-slate-900 leading-tight">
+                  {course.title}
+                </h1>
+                {user && <FavoriteButton courseId={id || ""} />}
+              </div>
               
               <div className="flex flex-wrap items-center gap-6 text-slate-600 mb-8 pb-8 border-b border-slate-100">
                 <div className="flex items-center gap-2">
@@ -229,6 +234,11 @@ export default function CourseDetailPage() {
                     )}
                   </div>
                 </section>
+              </div>
+
+              {/* Review Section */}
+              <div className="mt-12 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                <ReviewSystem courseId={id || ""} isEnrolled={isEnrolled} />
               </div>
             </div>
 

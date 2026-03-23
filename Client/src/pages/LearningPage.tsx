@@ -4,6 +4,7 @@ import { useCourse, useLessons, useEnrollmentStatus, useAuth, useCourseProgress,
 import { Button } from '@/components/ui/button'
 import { Loader2, AlertCircle, BookOpen, PlayCircle, ChevronLeft, CheckCircle2 } from 'lucide-react'
 import QuizView from '@/components/QuizView'
+import { CommentSection } from '@/components/ui/CommentSection'
 
 // Safe toast fallback
 const toast = {
@@ -283,6 +284,13 @@ export default function LearningPage() {
                       ? 'Đã hoàn thành'
                       : 'Hoàn thành bài học'}
                   </Button>
+                </div>
+              )}
+
+              {/* Comments Section */}
+              {activeLesson && !activeQuizId && (
+                <div className="border-t border-slate-100 pt-6 mt-6">
+                  <CommentSection lessonId={activeLesson.id} isEnrolled={isEnrolled} />
                 </div>
               )}
             </div>

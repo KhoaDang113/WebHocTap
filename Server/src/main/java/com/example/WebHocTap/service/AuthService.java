@@ -119,7 +119,7 @@ public class AuthService {
             String accessToken = jwtUtil.generateToken(user.getUsername());
             String refreshToken = createRefreshToken(user.getUsername());
 
-            return new AuthResponse(accessToken, refreshToken, user.getUsername(), user.getRole());
+            return new AuthResponse(user.getId(), accessToken, refreshToken, user.getUsername(), user.getRole());
 
         } catch (Exception e) {
             throw new AppException(ErrorCode.UNKNOWN_ERROR, "Lỗi khi tạo tài khoản");
@@ -203,7 +203,7 @@ public class AuthService {
         String accessToken = jwtUtil.generateToken(user.getUsername());
         String refreshToken = createRefreshToken(user.getUsername());
 
-        return new AuthResponse(accessToken, refreshToken, user.getUsername(), user.getRole());
+        return new AuthResponse(user.getId(), accessToken, refreshToken, user.getUsername(), user.getRole());
     }
 
     // --- SHARED ---
@@ -226,7 +226,7 @@ public class AuthService {
         String newAccessToken = jwtUtil.generateToken(user.getUsername());
         String newRefreshToken = createRefreshToken(user.getUsername());
 
-        return new AuthResponse(newAccessToken, newRefreshToken, user.getUsername(), user.getRole());
+        return new AuthResponse(user.getId(), newAccessToken, newRefreshToken, user.getUsername(), user.getRole());
     }
 
     public void logout(String refreshTokenStr) {

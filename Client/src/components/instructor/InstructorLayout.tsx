@@ -1,17 +1,17 @@
-import { Outlet, Navigate } from "react-router-dom";
-import AdminSidebar from "./AdminSidebar";
-import AdminHeader from "./AdminHeader";
-import { Footer } from "@/components";
-import { useAuth } from "@/hooks";
+import { Outlet, Navigate } from "react-router-dom"
+import { InstructorSidebar } from "@/components/instructor/InstructorSidebar"
+import { InstructorHeader } from "@/components/instructor/InstructorHeader"
+import { Footer } from "@/components"
+import { useAuth } from "@/hooks"
 
-export default function AdminLayout() {
-  const { user } = useAuth();
+export function InstructorLayout() {
+  const { user } = useAuth()
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace />
   }
 
-  if (user.role !== 'ADMIN') {
+  if (user.role !== 'TEACHER' && user.role !== 'ADMIN') {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-slate-50 font-sans">
         <div className="text-center p-8 bg-white rounded-2xl shadow-sm border border-slate-100 max-w-md">
@@ -21,7 +21,7 @@ export default function AdminLayout() {
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-slate-800 mb-2">Truy cập bị từ chối</h2>
-          <p className="text-slate-600 mb-6">Bạn không có quyền truy cập vào trang quản trị viên.</p>
+          <p className="text-slate-600 mb-6">Bạn không có quyền truy cập vào khu vực dành cho Giảng viên.</p>
           <button 
             onClick={() => window.location.href = '/'}
             className="px-6 py-2.5 bg-primary text-white font-medium rounded-xl hover:bg-primary-dark transition"
@@ -35,14 +35,14 @@ export default function AdminLayout() {
 
   return (
     <div className="flex h-screen w-full bg-slate-50 overflow-hidden font-sans">
-      <AdminSidebar />
+      <InstructorSidebar />
       <div className="flex-1 flex flex-col h-full overflow-hidden">
-        <AdminHeader />
+        <InstructorHeader />
         <main className="flex-1 overflow-y-auto">
           <Outlet />
           <Footer />
         </main>
       </div>
     </div>
-  );
+  )
 }
