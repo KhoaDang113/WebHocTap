@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom"
-import { LayoutDashboard, BookOpen, LogOut, ChevronLeft, ChevronRight, GraduationCap } from "lucide-react"
+import { LayoutDashboard, BookOpen, LogOut, ChevronLeft, ChevronRight, GraduationCap, Video } from "lucide-react"
 import { useState } from "react"
 import { useAuth } from "@/hooks"
 
@@ -11,6 +11,7 @@ export function InstructorSidebar() {
   const links = [
     { to: "/instructor/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
     { to: "/instructor/courses", icon: <BookOpen size={20} />, label: "Khóa học" },
+    { to: "/instructor/live", icon: <Video size={20} />, label: "Lớp học Live" },
   ]
 
   const isActive = (path: string) => {

@@ -10,8 +10,10 @@ import {
   CreditCard,
   ShieldCheck
 } from "lucide-react";
-import { useCourse, useLessons, useCategories, useEnrollmentStatus, useEnrollInCourse, useAuth } from "@/hooks";
+import { useCourse, useLessons, useCategories, useEnrollmentStatus, useEnrollInCourse, useAuth, useCourseLiveSessions } from "@/hooks";
+import type { LiveSessionDTO } from "@/types";
 import { Badge } from "@/components/ui/badge";
+import { Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,6 +54,9 @@ export default function CourseDetailPage() {
 
   const isEnrolled = !!enrollmentStatus?.isEnrolled;
 
+  const { data: liveSessions = [] } = useCourseLiveSessions(id || "", { enabled: isEnrolled || user?.role === 'ADMIN' || user?.role === 'TEACHER' });
+  const activeSessions = liveSessions.filter((s: LiveSessionDTO) => s.status === 'ACTIVE');
+
   const handlePrimaryAction = async () => {
     if (!id) return;
 
@@ -68,7 +73,7 @@ export default function CourseDetailPage() {
     try {
       await enroll();
       navigate(`/learn/${id}`);
-    } catch (error) {
+    } catch {
       // error đã được interceptor / backend xử lý message
     }
   };
@@ -173,6 +178,34 @@ export default function CourseDetailPage() {
 
               {/* Main Content Areas */}
               <div className="space-y-10">
+                
+                {/* Live Session Banner */}
+                {activeSessions.length > 0 && (
+                  <section>
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+                      <div className="flex items-start gap-4">
+                        <div className="bg-blue-100 p-3 rounded-full shrink-0">
+                          <Video className="w-6 h-6 text-blue-600 animate-pulse" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-bold text-blue-900 mb-1">Đang có lớp học Live!</h3>
+                          <p className="text-blue-700 text-sm">Giảng viên đang livestream phân tích nội dung chuyên sâu. Hãy tham gia ngay để không bỏ lỡ.</p>
+                          <div className="mt-2 text-xs font-semibold text-blue-600 bg-blue-100/50 inline-block px-2 py-1 rounded">
+                            Chủ đề: {activeSessions[0].title}
+                          </div>
+                        </div>
+                      </div>
+                      <Link 
+                        to={`/live/${activeSessions[0].id}`}
+                        target="_blank"
+                        className="w-full md:w-auto shrink-0 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-xl transition shadow-md whitespace-nowrap text-center"
+                      >
+                        Tham gia phòng Live
+                      </Link>
+                    </div>
+                  </section>
+                )}
+
                 <section>
                   <h2 className="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-3">
                     <span className="h-8 w-1.5 bg-indigo-600 rounded-full"></span>

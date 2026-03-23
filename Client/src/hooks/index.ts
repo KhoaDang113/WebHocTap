@@ -30,3 +30,10 @@ export {
   useCourseProgress,
   useCompleteLesson,
 } from './useEnrollment'
+export {
+  useLiveSessions,
+  useCourseLiveSessions,
+  useCreateLiveSession,
+  useEndLiveSession,
+  LIVE_SESSIONS_QUERY_KEY
+} from './useLiveSessions'
