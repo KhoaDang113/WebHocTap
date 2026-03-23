@@ -20,7 +20,16 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
 const LoginPage = () => {
   const navigate = useNavigate()
-  const { login, verifyLoginOtp, loginWithGoogle, loading, error, clearError } = useAuth()
+  const { user, login, verifyLoginOtp, loginWithGoogle, loading, error, clearError } = useAuth()
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'ADMIN') navigate('/admin');
+      else if (user.role === 'TEACHER') navigate('/instructor/dashboard');
+      else navigate('/');
+    }
+  }, [user, navigate])
 
   // UI state
   const [isOtpStep, setIsOtpStep] = useState(false)

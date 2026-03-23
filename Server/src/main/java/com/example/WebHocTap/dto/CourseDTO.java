@@ -2,6 +2,7 @@ package com.example.WebHocTap.dto;
 
 import com.example.WebHocTap.common.CourseStatus;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CourseDTO {

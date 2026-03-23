@@ -7,11 +7,13 @@ export interface ApiResponse<T = unknown> {
 
 // Auth types
 export interface User {
+  id: string
   username: string
   role: 'ADMIN' | 'TEACHER' | 'STUDENT'
 }
 
 export interface AuthResponse {
+  id: string
   accessToken: string
   refreshToken: string
   username: string
@@ -151,4 +153,54 @@ export interface SubmitQuizResponse {
   passed: boolean
   correctAnswers: number
   totalQuestions: number
+}
+
+// Interactions (Favorite, Review, Comment)
+export interface FavoriteDTO {
+  id: string
+  userId: string
+  courseId: string
+  createdAt: string
+}
+
+export interface ReviewDTO {
+  id: string
+  userId: string
+  courseId: string
+  rating: number // 1-5
+  comment: string
+  createdAt: string
+  userFullName?: string
+  userAvatar?: string
+}
+
+export interface CommentDTO {
+  id: string
+  userId: string
+  lessonId: string
+  content: string
+  parentId: string | null
+  likes: string[]
+  createdAt: string
+  userFullName?: string
+  userAvatar?: string
+  replies?: CommentDTO[]
+}
+
+// Instructor Stats
+export interface InstructorStatsDTO {
+  totalCourses: number
+  totalStudents: number
+  totalReviews: number
+  averageRating: number
+}
+
+export interface InstructorStudentDTO {
+  userId: string
+  fullName: string
+  email: string
+  courseId: string
+  courseTitle: string
+  enrolledAt: string
+  progressPercent: number
 }

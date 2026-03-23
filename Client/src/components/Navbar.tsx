@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks'
-import { LogIn, UserPlus, LogOut, User, Key, ChevronDown, Menu, BookOpen } from 'lucide-react'
+import { LogIn, UserPlus, LogOut, User, Key, ChevronDown, Menu, BookOpen, LayoutDashboard, Heart } from 'lucide-react'
 
 const Navbar = () => {
     const location = useLocation()
@@ -114,6 +114,19 @@ const Navbar = () => {
                                         <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user.username}</p>
                                     </div>
                                     
+                                    {user.role === 'TEACHER' && (
+                                        <a 
+                                            href="/instructor/dashboard" 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                            onClick={() => setIsDropdownOpen(false)}
+                                        >
+                                            <LayoutDashboard size={16} />
+                                            Khu vực Giảng viên
+                                        </a>
+                                    )}
+
                                     <Link 
                                         to="/profile" 
                                         className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
@@ -130,6 +143,15 @@ const Navbar = () => {
                                     >
                                         <BookOpen size={16} />
                                         Khóa học của tôi
+                                    </Link>
+                                    
+                                    <Link 
+                                        to="/favorites" 
+                                        className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-pink-600 dark:hover:text-pink-400 transition-colors"
+                                        onClick={() => setIsDropdownOpen(false)}
+                                    >
+                                        <Heart size={16} />
+                                        Khóa học yêu thích
                                     </Link>
                                     
                                     <Link 
@@ -215,6 +237,18 @@ const Navbar = () => {
                                         </span>
                                     </div>
                                 </div>
+                                {user.role === 'TEACHER' && (
+                                    <a 
+                                        href="/instructor/dashboard" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg"
+                                        onClick={() => setIsMenuOpen(false)}
+                                    >
+                                        <LayoutDashboard size={16} />
+                                        Khu vực Giảng viên
+                                    </a>
+                                )}
                                 <Link 
                                     to="/profile" 
                                     className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg"
@@ -222,6 +256,14 @@ const Navbar = () => {
                                 >
                                     <User size={16} />
                                     Hồ sơ cá nhân
+                                </Link>
+                                <Link 
+                                    to="/favorites" 
+                                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg"
+                                    onClick={() => setIsMenuOpen(false)}
+                                >
+                                    <Heart size={16} />
+                                    Khóa học yêu thích
                                 </Link>
                                 <Link 
                                     to="/profile" 
