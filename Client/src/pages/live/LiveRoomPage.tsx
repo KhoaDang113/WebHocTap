@@ -36,7 +36,8 @@ export default function LiveRoomPage() {
       } catch (err: unknown) {
         const errorMessage =
           typeof err === "object" && err !== null && "response" in err
-            ? (err as any).response?.data?.message
+            ? (err as { response: { data: { message: string } } }).response
+                ?.data?.message
             : "Không thể tham gia phòng. Vui lòng kiểm tra quyền truy cập.";
         setError(errorMessage);
       }

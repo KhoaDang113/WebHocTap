@@ -31,6 +31,7 @@ public class LiveSessionService {
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
     private final LiveKitService liveKitService;
+    private final NotificationService notificationService;
 
     // Lấy thông tin User hiện tại
     private User getCurrentUser() {
@@ -73,6 +74,11 @@ public class LiveSessionService {
         session.setCreatedAt(LocalDateTime.now().toString());
 
         LiveSession savedSession = liveSessionRepository.save(session);
+        
+        // Notify clients about the new live session
+        notificationService.notifyLiveSessionUpdate(course.getId());
+        System.out.println("Đã bắn tin nhắn đến phòng: " + course.getId());
+        
         return mapToDTO(savedSession);
     }
 
@@ -180,6 +186,9 @@ public class LiveSessionService {
 
         // Xóa phòng trên LiveKit server để kick out tất cả học sinh
         liveKitService.deleteRoom(session.getRoomName());
+        
+        // Notify clients that the session has ended
+        notificationService.notifyLiveSessionUpdate(course.getId());
     }
 
     private LiveSessionDTO mapToDTO(LiveSession session) {
