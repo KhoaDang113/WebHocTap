@@ -28,12 +28,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FavoriteButton } from "@/components/ui/FavoriteButton";
 import { ReviewSystem } from "@/components/ui/ReviewSystem";
 import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/components/ui/Toast";
 
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { error: toastError } = useToast();
 
   const {
     data: course,
@@ -54,9 +56,14 @@ export default function CourseDetailPage() {
     useEnrollInCourse(id);
 
   const isEnrolled = !!enrollmentStatus?.isEnrolled;
+  const isTeacher = user?.role === "TEACHER";
+  const isAdmin = user?.role === "ADMIN";
+  const isCourseOwner = user?.username === course?.instructor;
+  const isRestrictedTeacher = isTeacher && !isCourseOwner;
+  const isEnrolledOrOwner = isEnrolled || isCourseOwner || isAdmin;
 
   const { data: liveSessions = [] } = useCourseLiveSessions(id || "", {
-    enabled: isEnrolled || user?.role === "ADMIN" || user?.role === "TEACHER",
+    enabled: isEnrolledOrOwner,
   });
   const activeSessions = liveSessions.filter(
     (s: LiveSessionDTO) => s.status === "ACTIVE",
@@ -70,8 +77,13 @@ export default function CourseDetailPage() {
       return;
     }
 
-    if (isEnrolled) {
+    if (isEnrolledOrOwner) {
       navigate(`/learn/${id}`);
+      return;
+    }
+
+    if (isRestrictedTeacher) {
+      toastError("Giảng viên không thể đăng ký khóa học của giảng viên khác");
       return;
     }
 
@@ -85,7 +97,7 @@ export default function CourseDetailPage() {
 
   useStompSubscription({
     topic: id ? `/topic/course/${id}/live-sessions` : undefined,
-    onMessage: (message) => {
+    onMessage: () => {
       // Invalidate the query to fetch new live sessions data
       queryClient.invalidateQueries({
         queryKey: ["live-sessions", id],
@@ -367,7 +379,7 @@ export default function CourseDetailPage() {
                   <div className="space-y-3">
                     <Button
                       className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 text-lg font-bold shadow-lg shadow-indigo-100 transition-all active:scale-[0.98]"
-                      disabled={isEnrollmentLoading || isEnrollLoading}
+                      disabled={isEnrollmentLoading || isEnrollLoading || (isRestrictedTeacher && !isEnrolledOrOwner)}
                       onClick={handlePrimaryAction}
                     >
                       {isEnrollmentLoading ? (
@@ -380,8 +392,10 @@ export default function CourseDetailPage() {
                           <Loader2 className="h-5 w-5 animate-spin" />
                           Đang đăng ký...
                         </span>
-                      ) : isEnrolled ? (
+                      ) : isEnrolledOrOwner ? (
                         "Vào học"
+                      ) : isRestrictedTeacher ? (
+                        "Hạn chế đăng ký"
                       ) : course.price > 0 ? (
                         "Đăng ký khóa học"
                       ) : (

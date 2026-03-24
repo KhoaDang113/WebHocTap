@@ -26,7 +26,6 @@ const LoginPage = () => {
   useEffect(() => {
     if (user) {
       if (user.role === 'ADMIN') navigate('/admin');
-      else if (user.role === 'TEACHER') navigate('/instructor/dashboard');
       else navigate('/');
     }
   }, [user, navigate])

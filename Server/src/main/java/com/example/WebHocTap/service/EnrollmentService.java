@@ -24,10 +24,16 @@ public class EnrollmentService {
     private final com.example.WebHocTap.service.LessonProgressService lessonProgressService; // Add this line
 
     public Enrollment enroll(String courseId) {
-        String userId = getCurrentUserId();
+        User user = getCurrentUser();
+        String userId = user.getId();
 
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Course not found with id: " + courseId));
+
+        // Giảng viên không thể đăng ký khóa học của giảng viên khác
+        if (com.example.WebHocTap.common.UserRole.TEACHER.equals(user.getRole()) && !user.getUsername().equals(course.getInstructor())) {
+            throw new AppException(ErrorCode.FORBIDDEN, "Giảng viên không thể đăng ký khóa học của giảng viên khác");
+        }
 
         if (enrollmentRepository.existsByUserIdAndCourseId(userId, course.getId())) {
             throw new AppException(ErrorCode.DUPLICATE, "Already enrolled in course: " + courseId);
@@ -42,25 +48,32 @@ public class EnrollmentService {
     }
 
     public boolean isEnrolled(String courseId) {
-        String userId = getCurrentUserId();
+        User user = getCurrentUser();
+        String userId = user.getId();
 
-        if (!courseRepository.existsById(courseId)) {
-            throw new AppException(ErrorCode.NOT_FOUND, "Course not found with id: " + courseId);
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Course not found with id: " + courseId));
+
+        if (com.example.WebHocTap.common.UserRole.TEACHER.equals(user.getRole()) && user.getUsername().equals(course.getInstructor())) {
+            return true;
         }
 
         return enrollmentRepository.existsByUserIdAndCourseId(userId, courseId);
     }
 
-    public String getCurrentUserId() {
+    public User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new AppException(ErrorCode.UNAUTHORIZED, "Unauthorized");
         }
 
         String username = authentication.getName();
-        User user = userRepository.findByUsername(username)
+        return userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED, "User not found: " + username));
-        return user.getId();
+    }
+
+    public String getCurrentUserId() {
+        return getCurrentUser().getId();
     }
 
     public java.util.List<com.example.WebHocTap.dto.CourseDTO> getMyEnrolledCourses() {
@@ -99,7 +112,14 @@ public class EnrollmentService {
         Course course = courseRepository.findByInviteCode(code)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Invalid invite code"));
 
-        String userId = getCurrentUserId();
+        User user = getCurrentUser();
+        String userId = user.getId();
+
+        // Giảng viên không thể đăng ký khóa học của giảng viên khác
+        if (com.example.WebHocTap.common.UserRole.TEACHER.equals(user.getRole()) && !user.getUsername().equals(course.getInstructor())) {
+            throw new AppException(ErrorCode.FORBIDDEN, "Giảng viên không thể đăng ký khóa học của giảng viên khác");
+        }
+
         if (enrollmentRepository.existsByUserIdAndCourseId(userId, course.getId())) {
             throw new AppException(ErrorCode.DUPLICATE, "Already enrolled in this course");
         }

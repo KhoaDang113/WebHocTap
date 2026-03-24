@@ -1,10 +1,20 @@
-import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, BookOpen, Video, Settings, LogOut, ChevronLeft, ChevronRight, Layers, HelpCircle } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { LayoutDashboard, Users, BookOpen, Video, LogOut, ChevronLeft, ChevronRight, Layers, HelpCircle } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/hooks";
 
 export default function AdminSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const handleLogout = async () => {
+    if (window.confirm("Bạn có chắc chắn muốn đăng xuất?")) {
+      await logout();
+      navigate("/login");
+    }
+  };
 
   const links = [
     { to: "/admin", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
@@ -14,7 +24,6 @@ export default function AdminSidebar() {
     { to: "/admin/lessons", icon: <BookOpen size={20} />, label: "Bài học" },
     { to: "/admin/quizzes", icon: <HelpCircle size={20} />, label: "Quiz / Câu hỏi" },
     { to: "/admin/live", icon: <Video size={20} />, label: "Lớp học Live" },
-    { to: "/admin/settings", icon: <Settings size={20} />, label: "Cài đặt" },
   ];
 
   const isActive = (path: string) => {
@@ -29,7 +38,7 @@ export default function AdminSidebar() {
           <BookOpen className="text-blue-600" />
           {!isCollapsed && <h2 className="text-xl font-bold text-blue-600">EduTech Admin</h2>}
         </div>
-        <button 
+        <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
         >
@@ -42,11 +51,10 @@ export default function AdminSidebar() {
             key={link.to}
             to={link.to}
             title={isCollapsed ? link.label : ""}
-            className={`flex items-center gap-3 py-3 rounded-lg transition-colors ${isCollapsed ? "justify-center px-0" : "px-4"} ${
-              isActive(link.to)
+            className={`flex items-center gap-3 py-3 rounded-lg transition-colors ${isCollapsed ? "justify-center px-0" : "px-4"} ${isActive(link.to)
                 ? "bg-blue-50 text-blue-600 font-semibold"
                 : "text-slate-600 hover:bg-slate-50 hover:text-blue-600"
-            }`}
+              }`}
           >
             <div className={`${isActive(link.to) ? "text-blue-600" : ""}`}>{link.icon}</div>
             {!isCollapsed && <span className="font-medium">{link.label}</span>}
@@ -54,9 +62,10 @@ export default function AdminSidebar() {
         ))}
       </nav>
       <div className="p-4 border-t border-slate-200">
-        <button 
+        <button
           title={isCollapsed ? "Đăng xuất" : ""}
           className={`flex items-center gap-3 py-3 w-full rounded-lg text-slate-600 hover:bg-red-50 hover:text-red-500 transition-colors ${isCollapsed ? "justify-center px-0" : "px-4"}`}
+          onClick={handleLogout}
         >
           <LogOut size={20} />
           {!isCollapsed && <span className="font-medium">Đăng xuất</span>}
