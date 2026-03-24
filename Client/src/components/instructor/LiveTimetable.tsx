@@ -15,6 +15,19 @@ const PERIODS = Array.from({ length: 15 }, (_, i) => `Tiết ${i + 1}`);
 // Mapping period to approximate start hour
 const periodToHour = (p: number) => p + 6; // Tiết 1 -> 7h
 
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return "N/A";
+  try {
+    const date = new Date(dateStr);
+    return new Intl.DateTimeFormat("vi-VN", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(date);
+  } catch {
+    return dateStr;
+  }
+};
+
 export default function LiveTimetable({ schedules, getCourseName, onCancel, onOpenCreate }: LiveTimetableProps) {
   const [weekOffset, setWeekOffset] = useState(0);
 
@@ -70,7 +83,7 @@ export default function LiveTimetable({ schedules, getCourseName, onCancel, onOp
   }, [schedules, weekDates]);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200">
       {/* Header Controls */}
       <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
@@ -131,13 +144,13 @@ export default function LiveTimetable({ schedules, getCourseName, onCancel, onOp
                   return (
                     <td 
                       key={dIndex} 
-                      className="p-1 border-b border-r border-slate-100 relative min-h-[80px] hover:bg-indigo-50/30 transition-colors cursor-pointer"
+                      className="p-1 border-b border-r border-slate-100 relative min-h-20 hover:bg-indigo-50/30 transition-colors cursor-pointer group"
                       onClick={() => onOpenCreate(weekDates[dIndex], pIndex + 7)}
                     >
                       {items.map(item => (
                         <div 
                           key={item.id}
-                          className="mb-1 p-2 bg-indigo-600 text-white rounded shadow-sm group/item relative overflow-hidden"
+                          className="mb-1 p-2 bg-indigo-600 text-white rounded shadow-sm relative overflow-visible"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <div className="text-[10px] font-bold opacity-80 uppercase leading-none mb-1">
@@ -145,6 +158,47 @@ export default function LiveTimetable({ schedules, getCourseName, onCancel, onOp
                           </div>
                           <div className="text-xs font-bold leading-tight line-clamp-2">
                             {item.title}
+                          </div>
+
+                          {/* Hover Detail Card - Triggered by TD hover */}
+                          <div className="absolute left-full top-0 ml-4 w-72 p-4 bg-white/95 backdrop-blur-xl border border-slate-200 rounded-2xl shadow-2xl z-[100] invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none scale-95 group-hover:scale-100 origin-left">
+                            <div className="space-y-3">
+                              <div className="flex items-start justify-between border-b border-slate-100 pb-2">
+                                <h3 className="font-bold text-slate-900 leading-tight">
+                                  {item.title}
+                                </h3>
+                              </div>
+                              <div className="grid grid-cols-1 gap-2 text-xs text-left">
+                                <div className="p-2 bg-slate-50 rounded-lg">
+                                  <p className="text-slate-400 font-medium mb-1 uppercase tracking-tight text-[9px]">
+                                    Khóa học
+                                  </p>
+                                  <p className="text-slate-700 font-semibold truncate whitespace-normal">
+                                    {getCourseName(item.courseId)}
+                                  </p>
+                                </div>
+                                <div className="p-2 bg-slate-50 rounded-lg">
+                                  <p className="text-slate-400 font-medium mb-1 uppercase tracking-tight text-[9px]">
+                                    Thời gian dạy
+                                  </p>
+                                  <p className="text-slate-700 font-semibold">
+                                    {formatDate(item.startTime)}
+                                  </p>
+                                </div>
+                                {item.description && (
+                                  <div className="p-2 bg-slate-50 rounded-lg">
+                                    <p className="text-slate-400 font-medium mb-1 uppercase tracking-tight text-[9px]">
+                                      Mô tả chi tiết
+                                    </p>
+                                    <p className="text-slate-600 italic leading-relaxed whitespace-normal">
+                                      {item.description}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            {/* Arrow */}
+                            <div className="absolute top-4 -left-1.5 w-3 h-3 bg-white rotate-45 border-l border-b border-slate-200"></div>
                           </div>
                           
                           <button 
