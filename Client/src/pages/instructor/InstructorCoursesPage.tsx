@@ -2,16 +2,7 @@ import { useMemo, useState, type FormEvent, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { AlertCircle, Loader2, Pencil, Plus, Search, Trash2, Upload, Image as ImageIcon, FilePlus, RefreshCw, BookOpen } from "lucide-react"
 import { uploadImage } from "@/api/uploadApi"
-import {
-  useAuth,
-  useCategories,
-  useCourses,
-  useCreateCourse,
-  useDeleteCourse,
-  useUpdateCourse,
-  useUpdateCourseStatus,
-  useGenerateInviteCode,
-} from "@/hooks"
+import { useAuth, useCategories, useCourses, useCreateCourse, useDeleteCourse, useUpdateCourse, useUpdateCourseStatus, useGenerateInviteCode } from "@/hooks"
 import type { CategoryDTO, CourseDTO, CoursePayload, CourseStatus } from "@/types"
 
 type CourseFormState = {
@@ -99,7 +90,7 @@ export function InstructorCoursesPage() {
   // Set instructor info automatically when form is open and inserting new
   useEffect(() => {
     if (isFormOpen && !editingCourse && user) {
-        setFormState(prev => ({ ...prev, instructor: user.username }))
+      setFormState(prev => ({ ...prev, instructor: user.username }))
     }
   }, [isFormOpen, editingCourse, user])
 
@@ -110,10 +101,10 @@ export function InstructorCoursesPage() {
 
   const filteredCourses = useMemo(() => {
     const keyword = searchTerm.trim().toLowerCase()
-    
+
     // Only show courses that belong to the current instructor
-    const instructorCourses = allCourses.filter(course => 
-        course.instructor === user?.username
+    const instructorCourses = allCourses.filter(course =>
+      course.instructor === user?.username
     )
 
     return instructorCourses.filter((course) => {
@@ -168,7 +159,7 @@ export function InstructorCoursesPage() {
 
     return null
   }
-  
+
   const handleThumbnailUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
@@ -286,11 +277,11 @@ export function InstructorCoursesPage() {
   }
 
   return (
-    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
+    <div className="p-4 md:p-6 space-y-5 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Khóa học của tôi</h1>
-          <p className="text-slate-500 mt-1" >Tạo mới, chỉnh sửa giáo trình và cập nhật phát hành khóa học do bạn giảng dạy.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Khóa học của tôi</h1>
+          <p className="text-slate-500 text-sm mt-0.5" >Tạo mới, chỉnh sửa giáo trình và phát hành khóa học do bạn giảng dạy.</p>
         </div>
         <button
           type="button"
@@ -348,8 +339,8 @@ export function InstructorCoursesPage() {
           <table className="w-full text-left border-collapse min-w-[900px]">
             <thead>
               <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
-                <th className="py-4 px-6 font-semibold w-2/5">Thông tin Khóa học</th>
-                <th className="py-4 px-4 font-semibold">Danh mục</th>
+                <th className="py-3 px-4 font-semibold w-2/5">Thông tin Khóa học</th>
+                <th className="py-3 px-3 font-semibold">Danh mục</th>
                 <th className="py-4 px-4 font-semibold">Giá</th>
                 <th className="py-4 px-4 font-semibold text-center">Trạng thái & Mã LH</th>
                 <th className="py-4 px-6 font-semibold text-right">Quản lý</th>
@@ -360,18 +351,18 @@ export function InstructorCoursesPage() {
                 <tr>
                   <td colSpan={5} className="py-12 px-6">
                     <div className="flex flex-col items-center justify-center text-center">
-                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-3">
-                            <BookOpen size={28} />
-                        </div>
-                        <h3 className="text-lg font-semibold text-slate-800">Chưa có khóa học nào</h3>
-                        <p className="text-sm text-slate-500 mt-1 max-w-sm">Tạo khóa học mới để bắt đầu truyền đạt kiến thức và kết nối với học viên.</p>
-                        <button
-                            type="button"
-                            className="mt-4 text-indigo-600 text-sm font-medium hover:text-indigo-700 hover:underline inline-flex items-center gap-1"
-                            onClick={openCreateForm}
-                        >
-                            <Plus size={16} /> Tạo khóa học ngay
-                        </button>
+                      <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-3">
+                        <BookOpen size={28} />
+                      </div>
+                      <h3 className="text-lg font-semibold text-slate-800">Chưa có khóa học nào</h3>
+                      <p className="text-sm text-slate-500 mt-1 max-w-sm">Tạo khóa học mới để bắt đầu truyền đạt kiến thức và kết nối với học viên.</p>
+                      <button
+                        type="button"
+                        className="mt-4 text-indigo-600 text-sm font-medium hover:text-indigo-700 hover:underline inline-flex items-center gap-1"
+                        onClick={openCreateForm}
+                      >
+                        <Plus size={16} /> Tạo khóa học ngay
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -381,36 +372,36 @@ export function InstructorCoursesPage() {
                 <tr key={course.id} className="hover:bg-indigo-50/30 transition-colors group">
                   <td className="py-4 px-6">
                     <div className="flex items-start gap-4">
-                        <div className="w-24 h-16 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 relative">
-                            {course.thumbnailUrl ? (
-                                <img src={course.thumbnailUrl} alt={course.title} className="w-full h-full object-cover" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-slate-300">
-                                    <ImageIcon size={20} />
-                                </div>
-                            )}
-                            {course.isPrivate && (
-                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[1px]">
-                                    <span className="text-[10px] bg-black/80 text-white px-2 py-0.5 rounded font-bold uppercase tracking-widest">ẨN</span>
-                                </div>
-                            )}
-                        </div>
-                        <div className="flex flex-col gap-1 pr-4 min-w-0">
-                            <h4 className="font-semibold text-slate-900 line-clamp-1 leading-tight">{course.title}</h4>
-                            <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{course.description || "Chưa có mô tả"}</p>
-                        </div>
+                      <div className="w-24 h-16 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 relative">
+                        {course.thumbnailUrl ? (
+                          <img src={course.thumbnailUrl} alt={course.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-slate-300">
+                            <ImageIcon size={20} />
+                          </div>
+                        )}
+                        {course.isPrivate && (
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[1px]">
+                            <span className="text-[10px] bg-black/80 text-white px-2 py-0.5 rounded font-bold uppercase tracking-widest">ẨN</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-1 pr-4 min-w-0">
+                        <h4 className="font-semibold text-slate-900 line-clamp-1 leading-tight">{course.title}</h4>
+                        <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{course.description || "Chưa có mô tả"}</p>
+                      </div>
                     </div>
                   </td>
                   <td className="py-4 px-4">
                     <span className="inline-flex px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-md whitespace-nowrap">
-                        {categoryMap[course.categoryId] || "Chưa phân loại"}
+                      {categoryMap[course.categoryId] || "Chưa phân loại"}
                     </span>
                   </td>
                   <td className="py-4 px-4 font-semibold text-slate-800 whitespace-nowrap">
                     {Number(course.price || 0) === 0 ? (
-                        <span className="text-emerald-600 bg-emerald-50 px-2 py-1 rounded text-sm font-bold">Miễn phí</span>
+                      <span className="text-emerald-600 bg-emerald-50 px-2 py-1 rounded text-sm font-bold">Miễn phí</span>
                     ) : (
-                        <span>{Number(course.price).toLocaleString("vi-VN")} đ</span>
+                      <span>{Number(course.price).toLocaleString("vi-VN")} đ</span>
                     )}
                   </td>
                   <td className="py-4 px-4">
@@ -427,7 +418,7 @@ export function InstructorCoursesPage() {
                           </option>
                         ))}
                       </select>
-                      
+
                       {course.inviteCode ? (
                         <div className="flex items-center gap-1 group/code relative w-full px-2 justify-center">
                           <span className="font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded text-xs font-bold border border-indigo-100 select-all tracking-widest">
@@ -460,7 +451,7 @@ export function InstructorCoursesPage() {
                       <button
                         type="button"
                         className="p-2.5 rounded-xl bg-slate-100 text-slate-600 hover:text-indigo-600 hover:bg-indigo-100 transition-all font-medium flex items-center gap-2"
-                        onClick={() => navigate(`/instructor/courses/${course.id}/lessons/create`)}
+                        onClick={() => navigate(`/instructor/lessons?courseId=${course.id}`)}
                         disabled={isBusy}
                       >
                         <FilePlus size={16} /> <span className="text-xs hidden xl:inline-block">QL Bài học</span>
@@ -494,8 +485,8 @@ export function InstructorCoursesPage() {
 
       {formError && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-            <p>{formError}</p>
+          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <p>{formError}</p>
         </div>
       )}
 
@@ -503,15 +494,15 @@ export function InstructorCoursesPage() {
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
           <div className="w-full max-w-3xl bg-white rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] border border-slate-200 my-auto transform transition-all">
             <div className="border-b border-slate-100 px-6 sm:px-8 py-5 flex items-center justify-between">
-                <div>
-                    <h2 className="text-xl font-bold text-slate-900">{editingCourse ? "Chỉnh sửa khóa học" : "Thêm khóa học mới"}</h2>
-                    <p className="text-sm text-slate-500 mt-1">{editingCourse ? "Cập nhật các thông tin của khóa học hiện tại." : "Điền thông tin cơ bản để bắt đầu xây dựng giáo trình."}</p>
-                </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">{editingCourse ? "Chỉnh sửa khóa học" : "Thêm khóa học mới"}</h2>
+                <p className="text-sm text-slate-500 mt-1">{editingCourse ? "Cập nhật các thông tin của khóa học hiện tại." : "Điền thông tin cơ bản để bắt đầu xây dựng giáo trình."}</p>
+              </div>
             </div>
 
             <form onSubmit={handleSubmitForm} className="p-6 sm:px-8 space-y-5 max-h-[70vh] overflow-y-auto">
               {/* Form Content layout modified for Instructor view focusing more on UX */}
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6">
                 <div className="md:col-span-2 space-y-1">
                   <label className="text-sm font-semibold text-slate-700">Tên khóa học <span className="text-red-500">*</span></label>
@@ -528,15 +519,15 @@ export function InstructorCoursesPage() {
                 <div className="space-y-1">
                   <label className="text-sm font-semibold text-slate-700">Giá khóa học (VNĐ)</label>
                   <div className="relative">
-                      <input
-                        type="number"
-                        min="0"
-                        step="1000"
-                        value={formState.price}
-                        onChange={(event) => setFormState((prev) => ({ ...prev, price: event.target.value }))}
-                        className="w-full border border-slate-300 rounded-xl px-4 py-3 pr-12 outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-slate-800"
-                      />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium font-mono border-l pl-3 border-slate-200">đ</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1000"
+                      value={formState.price}
+                      onChange={(event) => setFormState((prev) => ({ ...prev, price: event.target.value }))}
+                      className="w-full border border-slate-300 rounded-xl px-4 py-3 pr-12 outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-slate-800"
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium font-mono border-l pl-3 border-slate-200">đ</span>
                   </div>
                 </div>
 
@@ -554,7 +545,7 @@ export function InstructorCoursesPage() {
                     ))}
                   </select>
                 </div>
-                
+
                 <div className="md:col-span-2 space-y-1">
                   <label className="text-sm font-semibold text-slate-700">Tên Bút Danh / Người đứng lớp</label>
                   <input
@@ -582,13 +573,13 @@ export function InstructorCoursesPage() {
                 <div className="flex flex-col justify-center pb-2 pt-6">
                   <label className="flex items-center gap-3 cursor-pointer w-max select-none">
                     <div className="relative flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={formState.isPrivate}
-                          onChange={(e) => setFormState((prev) => ({ ...prev, isPrivate: e.target.checked }))}
-                          className="peer sr-only"
-                        />
-                        <div className="w-10 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                      <input
+                        type="checkbox"
+                        checked={formState.isPrivate}
+                        onChange={(e) => setFormState((prev) => ({ ...prev, isPrivate: e.target.checked }))}
+                        className="peer sr-only"
+                      />
+                      <div className="w-10 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                     </div>
                     <span className="text-sm font-semibold text-slate-700">Ẩn khóa học (Chỉ xem qua link/mã mời)</span>
                   </label>
@@ -642,7 +633,7 @@ export function InstructorCoursesPage() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
                 <button
                   type="button"
@@ -658,9 +649,9 @@ export function InstructorCoursesPage() {
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
-                      <span className="flex items-center gap-2"><Loader2 size={16} className="animate-spin" /> {editingCourse ? "Đang cập nhật..." : "Đang tạo..."}</span>
+                    <span className="flex items-center gap-2"><Loader2 size={16} className="animate-spin" /> {editingCourse ? "Đang cập nhật..." : "Đang tạo..."}</span>
                   ) : (
-                      editingCourse ? "Lưu thay đổi" : "Hoàn thành tạo mới"
+                    editingCourse ? "Lưu thay đổi" : "Hoàn thành tạo mới"
                   )}
                 </button>
               </div>

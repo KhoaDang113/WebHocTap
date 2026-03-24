@@ -54,9 +54,10 @@ public class InstructorStatsService {
         List<String> courseIds = courses.stream().map(Course::getId).collect(Collectors.toList());
 
         List<Enrollment> enrollments = enrollmentRepository.findByCourseIdIn(courseIds);
+        enrollments.sort((a, b) -> b.getEnrolledAt().compareTo(a.getEnrolledAt()));
 
         return enrollments.stream().map(enrollment -> {
-            User user = userRepository.findByUsername(enrollment.getUserId()).orElse(null);
+            User user = userRepository.findById(enrollment.getUserId()).orElse(null);
             Course course = courses.stream()
                 .filter(c -> c.getId().equals(enrollment.getCourseId()))
                 .findFirst()
