@@ -67,8 +67,9 @@ public class OAuth2Service {
 
         String email = String.valueOf(tokenInfo.get("email"));
         String name = tokenInfo.containsKey("name") ? String.valueOf(tokenInfo.get("name")) : email.split("@")[0];
+        String picture = tokenInfo.containsKey("picture") ? String.valueOf(tokenInfo.get("picture")) : null;
 
-        return findOrCreateUserAndLogin(email, name, "GOOGLE");
+        return findOrCreateUserAndLogin(email, name, "GOOGLE", picture);
     }
 
     // --- Facebook Login ---
@@ -115,17 +116,22 @@ public class OAuth2Service {
                     "Không lấy được email từ Facebook. Vui lòng cấp quyền email.");
         }
 
-        return findOrCreateUserAndLogin(email, name, "FACEBOOK");
+        return findOrCreateUserAndLogin(email, name, "FACEBOOK", null);
     }
 
     // --- Shared ---
 
-    private AuthResponse findOrCreateUserAndLogin(String email, String fullName, String provider) {
+    private AuthResponse findOrCreateUserAndLogin(String email, String fullName, String provider, String pictureUrl) {
         Optional<User> existingUser = userRepository.findByEmail(email);
 
         User user;
         if (existingUser.isPresent()) {
             user = existingUser.get();
+            // Cập nhật avatar từ Google mỗi lần đăng nhập
+            if (pictureUrl != null && !pictureUrl.isEmpty()) {
+                user.setAvatarUrl(pictureUrl);
+                userRepository.save(user);
+            }
         } else {
             // Create new user
             user = new User();
@@ -134,7 +140,15 @@ public class OAuth2Service {
             user.setFullName(fullName);
             user.setPassword(UUID.randomUUID().toString()); // Random password (won't be used)
             user.setRole(UserRole.STUDENT);
+            if (pictureUrl != null && !pictureUrl.isEmpty()) {
+                user.setAvatarUrl(pictureUrl);
+            }
             userRepository.save(user);
+        }
+
+        // Kiểm tra tài khoản bị khóa
+        if (user.isLocked()) {
+            throw new AppException(ErrorCode.FORBIDDEN, "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ admin.");
         }
 
         String accessToken = jwtUtil.generateToken(user.getUsername());

@@ -47,10 +47,21 @@ export interface UserDTO {
   username: string;
   email: string;
   fullName: string;
+  avatarUrl?: string;
+  bio?: string;
   role: "ADMIN" | "TEACHER" | "STUDENT";
+  isLocked: boolean;
+  pendingTeacherRequest: boolean;
   createdAt: string;
   updatedAt: string;
-  isBlocked?: boolean;
+}
+
+export interface UserPayload {
+  username: string;
+  email: string;
+  password?: string;
+  fullName: string;
+  role: "TEACHER" | "STUDENT";
 }
 
 // Course management
