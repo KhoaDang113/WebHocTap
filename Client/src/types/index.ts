@@ -238,3 +238,22 @@ export interface CreateLiveSessionRequest {
   description: string;
   courseId: string;
 }
+
+// Live Schedule management
+export interface LiveScheduleDTO {
+  id: string;
+  courseId: string;
+  title: string;
+  description: string;
+  startTime: string; // ISO String
+  status: "SCHEDULED" | "DONE" | "CANCELLED";
+  teacherId: string;
+  isReminded: boolean;
+}
+
+export interface CreateLiveScheduleRequest {
+  courseId: string;
+  title: string;
+  description: string;
+  startTime: string;
+}
