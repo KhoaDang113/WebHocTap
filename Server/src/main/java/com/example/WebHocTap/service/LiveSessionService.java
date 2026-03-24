@@ -128,7 +128,8 @@ public class LiveSessionService {
             throw new AppException(ErrorCode.FORBIDDEN, "You are not enrolled in this course");
         }
         
-        return liveSessionRepository.findAll().stream()
+        org.springframework.data.domain.Sort sort = org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt");
+        return liveSessionRepository.findAll(sort).stream()
                 .filter(s -> s.getCourseId().equals(courseId))
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
@@ -140,8 +141,9 @@ public class LiveSessionService {
         boolean isAdmin = user.getRole() == com.example.WebHocTap.common.UserRole.ADMIN;
         
         List<LiveSession> sessions;
+        org.springframework.data.domain.Sort sort = org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt");
         if (isAdmin) {
-            sessions = liveSessionRepository.findAll();
+            sessions = liveSessionRepository.findAll(sort);
         } else {
             // Là Teacher, lấy các khóa học họ dạy
             List<Course> myCourses = courseRepository.findAll().stream()
@@ -149,7 +151,7 @@ public class LiveSessionService {
                     .collect(Collectors.toList());
             List<String> myCourseIds = myCourses.stream().map(Course::getId).collect(Collectors.toList());
             
-            sessions = liveSessionRepository.findAll().stream()
+            sessions = liveSessionRepository.findAll(sort).stream()
                     .filter(s -> myCourseIds.contains(s.getCourseId()))
                     .collect(Collectors.toList());
         }
