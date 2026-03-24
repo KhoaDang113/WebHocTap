@@ -130,14 +130,19 @@ export function CommentSection({ lessonId, isEnrolled }: CommentSectionProps) {
                 className="w-10 h-10 rounded-full flex-shrink-0"
               />
               <div className="flex-1">
-                <div className="bg-surface-2 rounded-xl p-4 border border-border">
+                <div className={`rounded-xl p-4 border ${comment.isHidden ? 'bg-red-50/50 border-red-100 opacity-80' : 'bg-surface-2 border-border'}`}>
+                  {comment.isHidden && (
+                    <div className="mb-2 px-3 py-1.5 bg-red-100/30 text-red-600 rounded-lg text-[10px] font-bold flex items-center gap-2 border border-red-100/50 uppercase tracking-tighter">
+                      Bình luận của bạn đã bị giảng viên ẩn
+                    </div>
+                  )}
                   <div className="flex justify-between items-center mb-1">
-                    <span className="font-medium">{comment.userFullName || 'Người học'}</span>
+                    <span className={`font-medium ${comment.isHidden ? 'text-slate-400' : ''}`}>{comment.userFullName || 'Người học'}</span>
                     <span className="text-xs text-text-secondary">
                       {new Date(comment.createdAt).toLocaleDateString('vi-VN')}
                     </span>
                   </div>
-                  <p className="text-sm leading-relaxed text-text">{comment.content}</p>
+                  <p className={`text-sm leading-relaxed ${comment.isHidden ? 'text-slate-300 italic' : 'text-text'}`}>{comment.content}</p>
                 </div>
                 
                 <div className="flex items-center space-x-4 mt-2 ml-2">

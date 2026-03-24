@@ -17,6 +17,7 @@ import {
   InstructorCoursesPage,
   InstructorCreateLessonPage,
   InstructorLivePage,
+  InstructorInteractionsPage,
   FavoritesPage,
 } from "@/pages";
 import LiveRoomPage from "@/pages/live/LiveRoomPage";
@@ -76,6 +77,7 @@ function App() {
                   element={<InstructorCreateLessonPage />}
                 />
                 <Route path="live" element={<InstructorLivePage />} />
+                <Route path="interactions" element={<InstructorInteractionsPage />} />
               </Route>
 
               {/* Public routes - có Navbar */}

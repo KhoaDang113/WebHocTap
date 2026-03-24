@@ -172,6 +172,8 @@ export interface ReviewDTO {
   createdAt: string;
   userFullName?: string;
   userAvatar?: string;
+  courseTitle?: string;
+  isHidden?: boolean;
 }
 
 export interface CommentDTO {
@@ -185,6 +187,9 @@ export interface CommentDTO {
   userFullName?: string;
   userAvatar?: string;
   replies?: CommentDTO[];
+  lessonTitle?: string;
+  courseTitle?: string;
+  isHidden?: boolean;
 }
 
 // Instructor Stats
