@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Users, BookOpen, Video, LogOut, ChevronLeft, ChevronRight, Layers, HelpCircle } from "lucide-react";
+import { LayoutDashboard, Users, BookOpen, Video, LogOut, ChevronLeft, ChevronRight, Layers, HelpCircle, History } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks";
 
@@ -23,6 +23,7 @@ export default function AdminSidebar() {
     { to: "/admin/courses", icon: <BookOpen size={20} />, label: "Khóa học" },
     { to: "/admin/lessons", icon: <BookOpen size={20} />, label: "Bài học" },
     { to: "/admin/quizzes", icon: <HelpCircle size={20} />, label: "Quiz / Câu hỏi" },
+    { to: "/admin/quizzes/attempts", icon: <History size={20} />, label: "Lịch sử thi" },
     { to: "/admin/live", icon: <Video size={20} />, label: "Lớp học Live" },
   ];
 

@@ -8,6 +8,7 @@ export { default as ChangePasswordPage } from './ChangePasswordPage'
 export { default as CoursesPage } from './CoursesPage'
 export { default as CourseDetailPage } from './CourseDetailPage'
 export { default as LearningPage } from './LearningPage'
+export { QuizPage } from "./QuizPage";
 export * from './instructor/InstructorDashboardPage'
 export * from './instructor/InstructorCoursesPage'
 export * from './instructor/InstructorCreateLessonPage'

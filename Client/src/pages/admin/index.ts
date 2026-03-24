@@ -6,6 +6,7 @@ import AdminCategoryPage from './AdminCategoryPage'
 import AdminLessonsPage from './AdminLessonsPage'
 import AdminCreateLessonPage from './AdminCreateLessonPage'
 import AdminQuizzesPage from './AdminQuizzesPage'
+import AdminQuizAttemptsPage from './AdminQuizAttemptsPage'
 
 export {
   AdminDashboardPage,
@@ -16,4 +17,5 @@ export {
   AdminLessonsPage,
   AdminCreateLessonPage,
   AdminQuizzesPage,
+  AdminQuizAttemptsPage,
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks";
+import { useAuth, useMyAverageScore } from "@/hooks";
 import { Edit, Save, X, Camera, Mail, User as UserIcon, Calendar, MapPin, Phone, BookOpen, Clock, ShieldCheck, PlayCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getMyCourses } from "@/api/enrollmentApi";
@@ -7,6 +7,7 @@ import type { CourseDTO } from "@/types";
 
 export function ProfilePage() {
   const { user } = useAuth();
+  const { data: averageScore = 0 } = useMyAverageScore();
   
   // Trạng thái cho chế độ chỉnh sửa
   const [isEditing, setIsEditing] = useState(false);
@@ -278,7 +279,7 @@ export function ProfilePage() {
                 
                 <div className="p-4 rounded-xl bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20">
                   <div className="text-purple-600 dark:text-purple-400 font-semibold mb-1">Điểm trung bình</div>
-                  <div className="text-3xl font-bold text-slate-900 dark:text-white">0.0</div>
+                  <div className="text-3xl font-bold text-slate-900 dark:text-white">{averageScore.toFixed(1)}</div>
                 </div>
               </div>
             </div>

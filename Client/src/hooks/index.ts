@@ -38,3 +38,4 @@ export {
   LIVE_SESSIONS_QUERY_KEY,
 } from "./useLiveSessions";
 export { useStompSubscription } from "./useStompSubscription";
+export { useCourseQuizzes, useMyAverageScore } from "./useQuizzes";

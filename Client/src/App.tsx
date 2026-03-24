@@ -18,6 +18,7 @@ import {
   InstructorCreateLessonPage,
   InstructorLivePage,
   FavoritesPage,
+  QuizPage,
 } from "@/pages";
 import LiveRoomPage from "@/pages/live/LiveRoomPage";
 import AdminLayout from "@/components/admin/AdminLayout";
@@ -31,6 +32,7 @@ import {
   AdminLessonsPage,
   AdminCreateLessonPage,
   AdminQuizzesPage,
+  AdminQuizAttemptsPage,
 } from "@/pages/admin";
 
 const queryClient = new QueryClient({
@@ -51,6 +53,9 @@ function App() {
             <Routes>
               {/* Live Session standalone route (No Navbar, Fullscreen) */}
               <Route path="/live/:sessionId" element={<LiveRoomPage />} />
+              
+              {/* Quiz standalone route (No Navbar, Fullscreen test area) */}
+              <Route path="/quiz/:courseId/:quizId" element={<QuizPage />} />
 
               {/* Admin routes - layout riêng, không có Navbar */}
               <Route path="/admin" element={<AdminLayout />}>
@@ -64,6 +69,7 @@ function App() {
                 />
                 <Route path="lessons" element={<AdminLessonsPage />} />
                 <Route path="quizzes" element={<AdminQuizzesPage />} />
+                <Route path="quizzes/attempts" element={<AdminQuizAttemptsPage />} />
                 <Route path="live" element={<AdminLivePage />} />
               </Route>
 

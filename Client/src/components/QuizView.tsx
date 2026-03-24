@@ -3,6 +3,7 @@ import { getQuizById, startQuiz, getQuizAttempt, submitQuiz } from '@/api/quizAp
 import type { QuizDTO, QuizAttemptDTO, SubmitQuizResponse } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Loader2, AlertCircle, Clock, CheckCircle } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 interface QuizViewProps {
   quizId: string
@@ -18,6 +19,7 @@ export default function QuizView({ quizId }: QuizViewProps) {
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<SubmitQuizResponse | null>(null)
   
+  const navigate = useNavigate()
   const hasSubmitted = useRef(false)
 
   // Initialization
@@ -37,6 +39,12 @@ export default function QuizView({ quizId }: QuizViewProps) {
         try {
           const attemptRes = await getQuizAttempt(quizId)
           attemptData = attemptRes.data
+          
+          if (attemptData.status === 'NOT_STARTED') {
+             // If not started, explicitly call startQuiz
+             const startRes = await startQuiz(quizId)
+             attemptData = startRes.data
+          }
         } catch (err: any) {
           if (err.response?.status === 404 || err.response?.status === 400) {
             const startRes = await startQuiz(quizId)
@@ -47,11 +55,20 @@ export default function QuizView({ quizId }: QuizViewProps) {
         }
 
         if (isMounted) {
+          if (attemptData.status === 'COMPLETED' || attemptData.status === 'EXPIRED' || attemptData.status === 'MAX_ATTEMPTS_REACHED') {
+            hasSubmitted.current = true
+          }
+          
           setAttempt(attemptData)
           setRemainingTime(attemptData.remainingTime)
-          if (attemptData.status === 'COMPLETED' || attemptData.status === 'EXPIRED') {
-            hasSubmitted.current = true
-            // If the attempt is already finished, maybe we disable inputs
+          
+          if (hasSubmitted.current) {
+            setResult({
+              score: attemptData.score || 0,
+              passed: (attemptData.score || 0) >= 5,
+              correctAnswers: attemptData.correctAnswers || 0,
+              totalQuestions: attemptData.totalQuestions || 0
+            })
           }
         }
       } catch (err: any) {
@@ -106,34 +123,32 @@ export default function QuizView({ quizId }: QuizViewProps) {
 
   // Handle Auto Submit when time reaches 0
   useEffect(() => {
-    if (remainingTime === 0 && !hasSubmitted.current && !isSubmitting) {
+    if (remainingTime === 0 && remainingTime !== null && !hasSubmitted.current && !isSubmitting && attempt && attempt.status === 'IN_PROGRESS') {
       handleAutoSubmit()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [remainingTime, isSubmitting])
+  }, [remainingTime, isSubmitting, attempt])
 
   const handleAutoSubmit = async () => {
-    hasSubmitted.current = true
     await performSubmit()
   }
 
   const handleManualSubmit = async () => {
     if (confirm('Bạn có chắc chắn muốn nộp bài?')) {
-      hasSubmitted.current = true
       await performSubmit()
     }
   }
 
   const performSubmit = async () => {
-    if (isSubmitting) return
+    if (isSubmitting || hasSubmitted.current) return
+    
     setIsSubmitting(true)
+    hasSubmitted.current = true // Mark to prevent duplicate calls
     try {
-      // transform userAnswers object to array wrapper payload
-      const answersList = Object.keys(userAnswers).map((qId) => ({
-        questionId: qId,
-        answerId: userAnswers[qId],
-      }))
-      const res = await submitQuiz(quizId, { answers: answersList })
+      // Send userAnswers object directly as the map
+      const res = await submitQuiz(quizId, { answers: userAnswers })
+      
+      // Navigate back to course learning page with result
       setResult(res.data)
       setRemainingTime(0)
     } catch (err: any) {
@@ -187,13 +202,14 @@ export default function QuizView({ quizId }: QuizViewProps) {
   const isSubmitDisabled = remainingTime === 0 || isSubmitting || hasSubmitted.current || result !== null
 
   return (
-    <div className="flex flex-col max-h-screen">
+    <div className="flex flex-col h-full">
       {/* Quiz Header */}
-      <div className="bg-white border-b sticky top-0 z-10 p-4 sm:px-6 lg:px-8 flex items-center justify-between shadow-sm">
-        <div>
-          <h2 className="text-xl font-bold text-slate-800">{quiz.title}</h2>
-          {quiz.description && <p className="text-sm text-slate-500">{quiz.description}</p>}
-        </div>
+      <div className="bg-white border-b sticky top-0 z-10 shadow-sm">
+        <div className="max-w-4xl mx-auto p-4 flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-slate-800">{quiz.title}</h2>
+            {quiz.description && <p className="text-sm text-slate-500">{quiz.description}</p>}
+          </div>
         {!result && (
           <div className="flex items-center gap-4">
             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full font-semibold ${
@@ -212,6 +228,7 @@ export default function QuizView({ quizId }: QuizViewProps) {
             </Button>
           </div>
         )}
+        </div>
       </div>
 
       {/* Quiz Content */}
@@ -233,6 +250,15 @@ export default function QuizView({ quizId }: QuizViewProps) {
                   {result.correctAnswers} / {result.totalQuestions}
                 </p>
               </div>
+            </div>
+
+            <div className="mt-8 flex justify-center">
+              <Button 
+                onClick={() => quiz?.courseId && navigate(`/courses/${quiz.courseId}`)}
+                className="bg-indigo-600 hover:bg-indigo-700 min-w-[120px]"
+              >
+                Tiếp tục bài học
+              </Button>
             </div>
           </div>
         ) : (

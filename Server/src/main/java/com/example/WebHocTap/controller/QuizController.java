@@ -6,6 +6,7 @@ import com.example.WebHocTap.model.CreateQuizRequest;
 import com.example.WebHocTap.model.QuizResultResponse;
 import com.example.WebHocTap.model.QuizSubmitRequest;
 import com.example.WebHocTap.model.QuizTimerResponse;
+import com.example.WebHocTap.model.QuizAttemptHistoryResponse;
 import com.example.WebHocTap.service.QuizService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -58,23 +59,42 @@ public class QuizController {
     }
 
     @PostMapping("/{quizId}/start")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<QuizTimerResponse>> startQuiz(@PathVariable("quizId") String quizId) {
         return ResponseEntity.ok(ApiResponse.ok(quizService.startQuiz(quizId)));
     }
 
     @GetMapping("/{quizId}/attempt")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<QuizTimerResponse>> getAttempt(@PathVariable("quizId") String quizId) {
         return ResponseEntity.ok(ApiResponse.ok(quizService.getAttempt(quizId)));
     }
 
+    @GetMapping("/my-average-score")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<Double>> getMyAverageScore() {
+        return ResponseEntity.ok(ApiResponse.ok(quizService.getMyAverageScore()));
+    }
+
     @PostMapping("/{quizId}/submit")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<QuizResultResponse>> submitQuiz(
             @PathVariable("quizId") String quizId,
             @RequestBody QuizSubmitRequest request
     ) {
         return ResponseEntity.ok(ApiResponse.ok(quizService.submitQuiz(quizId, request)));
+    }
+
+    @GetMapping("/attempts")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<ApiResponse<List<QuizAttemptHistoryResponse>>> getAllAttemptsForAdmin() {
+        return ResponseEntity.ok(ApiResponse.ok(quizService.getAllAttemptsForAdmin()));
+    }
+
+    @DeleteMapping("/attempts/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<ApiResponse<Void>> deleteAttempt(@PathVariable("id") String id) {
+        quizService.deleteAttempt(id);
+        return ResponseEntity.ok(ApiResponse.ok(null, "Attempt deleted successfully"));
     }
 }

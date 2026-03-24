@@ -1,9 +1,8 @@
-import { useParams, Navigate, Link } from 'react-router-dom'
-import { useState } from 'react'
-import { useCourse, useLessons, useEnrollmentStatus, useAuth, useCourseProgress, useCompleteLesson } from '@/hooks'
+import { useParams, Navigate, Link, useNavigate, useLocation } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useCourse, useLessons, useEnrollmentStatus, useAuth, useCourseProgress, useCompleteLesson, useCourseQuizzes } from '@/hooks'
 import { Button } from '@/components/ui/button'
 import { Loader2, AlertCircle, BookOpen, PlayCircle, ChevronLeft, CheckCircle2 } from 'lucide-react'
-import QuizView from '@/components/QuizView'
 import { CommentSection } from '@/components/ui/CommentSection'
 
 // Safe toast fallback
@@ -14,9 +13,33 @@ const toast = {
 
 export default function LearningPage() {
   const { courseId } = useParams<{ courseId: string }>()
+  const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useAuth()
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null)
-  const [activeQuizId, setActiveQuizId] = useState<string | null>(null)
+  const [showResult, setShowResult] = useState<{
+    quizTitle: string;
+    quizResult: { 
+      passed: boolean; 
+      score: number; 
+      correctAnswers: number; 
+      totalQuestions: number;
+      maxAttempts?: number;
+      attemptCount?: number;
+      isMaxAttempts?: boolean;
+    };
+  } | null>(null);
+
+  useEffect(() => {
+    if (location.state?.showResultMode) {
+      setShowResult({
+        quizTitle: location.state.quizTitle,
+        quizResult: location.state.quizResult
+      });
+      // Consume state so it doesn't pop up again on refresh
+      window.history.replaceState({}, '')
+    }
+  }, [location]);
 
   const {
     data: course,
@@ -38,6 +61,11 @@ export default function LearningPage() {
   const {
     data: progress,
   } = useCourseProgress(courseId)
+
+  const {
+    data: quizzesData,
+    isLoading: isQuizzesLoading
+  } = useCourseQuizzes(courseId || '')
 
   const completeLessonMutation = useCompleteLesson(courseId)
 
@@ -75,9 +103,7 @@ export default function LearningPage() {
   }
 
   const sortedLessons = [...lessons].sort((a, b) => a.orderIndex - b.orderIndex)
-  const activeLesson = activeQuizId
-    ? null
-    : sortedLessons.find((lesson) => lesson.id === activeLessonId) ||
+  const activeLesson = sortedLessons.find((lesson) => lesson.id === activeLessonId) ||
       sortedLessons[0] ||
       null
 
@@ -130,8 +156,9 @@ export default function LearningPage() {
       </div>
 
       <div className="container mx-auto px-4 py-6 lg:py-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-        <aside className="lg:col-span-3">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden sticky top-24">
+        {!showResult && (
+          <aside className="lg:col-span-3">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden sticky top-24">
             <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <BookOpen className="h-4 w-4 text-indigo-600" />
@@ -160,13 +187,12 @@ export default function LearningPage() {
                     <div
                       key={lesson.id}
                       className={`flex items-center gap-3 px-4 py-3 cursor-pointer border-l-2 ${
-                        activeLesson && activeLesson.id === lesson.id && !activeQuizId
+                        activeLesson && activeLesson.id === lesson.id
                           ? 'bg-indigo-50 border-indigo-500'
                           : 'border-transparent hover:bg-slate-50'
                       }`}
                       onClick={() => {
                         setActiveLessonId(lesson.id)
-                        setActiveQuizId(null)
                       }}
                     >
                       <div className="flex-shrink-0">
@@ -198,43 +224,41 @@ export default function LearningPage() {
                 })
               )}
 
-              {/* Mock Quiz Item for testing */}
-              {sortedLessons.length > 0 && (
-                <div
-                  className={`flex items-center gap-3 px-4 py-3 cursor-pointer border-l-2 mt-2 border-t border-slate-100 ${
-                    activeQuizId
-                      ? 'bg-indigo-50 border-indigo-500'
-                      : 'border-transparent hover:bg-slate-50'
-                  }`}
-                  onClick={() => {
-                    setActiveQuizId('mock-quiz-123') // Replace with actual quiz ID later
-                    setActiveLessonId(null)
-                  }}
-                >
-                  <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 text-xs font-semibold">
-                    ❓
+              {/* Quizzes List */}
+              {isQuizzesLoading ? (
+                 <div className="flex justify-center p-3">
+                   <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+                 </div>
+              ) : (
+                quizzesData?.filter(q => q.status === 'PUBLIC')?.map((quiz) => (
+                  <div
+                    key={quiz.id}
+                    className="flex items-center gap-3 px-4 py-3 cursor-pointer border-l-2 mt-2 border-t border-slate-100 border-transparent hover:bg-slate-50"
+                    onClick={() => {
+                      navigate(`/quiz/${courseId}/${quiz.id}`)
+                    }}
+                  >
+                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 text-xs font-semibold">
+                      ❓
+                    </div>
+                    <div className="flex-grow">
+                      <p className="text-[13px] font-semibold text-slate-800 line-clamp-2">
+                        {quiz.title}
+                      </p>
+                      <p className="text-[11px] text-slate-500 line-clamp-2">
+                        {quiz.timeLimit} giây
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-grow">
-                    <p className="text-[13px] font-semibold text-slate-800 line-clamp-2">
-                      Bài kiểm tra kết thúc
-                    </p>
-                    <p className="text-[11px] text-slate-500 line-clamp-2">
-                      Kiểm tra kiến thức khóa học
-                    </p>
-                  </div>
-                </div>
+                ))
               )}
             </div>
           </div>
         </aside>
+        )}
 
-        <section className="lg:col-span-9">
-          {activeQuizId ? (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-[calc(100vh-120px)] flex flex-col">
-              <QuizView quizId={activeQuizId} />
-            </div>
-          ) : (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+        <section className={showResult ? "lg:col-span-12" : "lg:col-span-9"}>
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
               {activeLesson && (activeLesson.videoUrl || activeLesson.imageUrl) && (
               <div className="aspect-video bg-black flex items-center justify-center">
                 {activeLesson.videoUrl ? (
@@ -264,7 +288,7 @@ export default function LearningPage() {
               )}
 
               {/* Complete Lesson Button */}
-              {activeLesson && !activeQuizId && (
+              {activeLesson && (
                 <div className="border-t border-slate-100 pt-6 mt-6 flex justify-end">
                   <Button
                     onClick={handleCompleteLesson}
@@ -288,16 +312,70 @@ export default function LearningPage() {
               )}
 
               {/* Comments Section */}
-              {activeLesson && !activeQuizId && (
+              {activeLesson && (
                 <div className="border-t border-slate-100 pt-6 mt-6">
                   <CommentSection lessonId={activeLesson.id} isEnrolled={isEnrolled} />
                 </div>
               )}
             </div>
           </div>
-          )}
         </section>
       </div>
+
+      {/* Quiz Result Modal */}
+      {showResult && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 sm:p-8 animate-in zoom-in-95 duration-200 flex flex-col items-center text-center">
+            {showResult.quizResult.isMaxAttempts ? (
+              <AlertCircle className="w-20 h-20 mb-4 text-red-500" />
+            ) : (
+              <CheckCircle2 className={`w-20 h-20 mb-4 ${showResult.quizResult.passed ? 'text-green-500' : 'text-emerald-500'}`} />
+            )}
+            
+            <h3 className="text-2xl font-bold text-slate-800 mb-2">
+              {showResult.quizResult.isMaxAttempts ? "Hết lượt làm bài" : "Kết quả bài thi"}
+            </h3>
+            <p className="text-slate-500 mb-6 font-medium line-clamp-2">{showResult.quizTitle}</p>
+            
+            {showResult.quizResult.isMaxAttempts ? (
+              <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-8 w-full">
+                <p className="text-red-700 font-medium">
+                  Bạn đã sử dụng hết {showResult.quizResult.maxAttempts} lượt làm bài cho bài thi này.
+                </p>
+                <p className="text-red-600/70 text-sm mt-1">
+                  Điểm cao nhất sẽ được ghi nhận vào hệ thống.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4 w-full mb-8">
+                <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                  <p className="text-indigo-600/80 text-sm mb-1 uppercase tracking-wider font-bold">Điểm số</p>
+                  <p className="text-3xl font-black text-indigo-700">{showResult.quizResult.score}</p>
+                </div>
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                  <p className="text-slate-500 text-sm mb-1 uppercase tracking-wider font-bold">Trả lời đúng</p>
+                  <p className="text-3xl font-black text-slate-800">
+                    {showResult.quizResult.correctAnswers}<span className="text-xl text-slate-400">/{showResult.quizResult.totalQuestions}</span>
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            {!showResult.quizResult.isMaxAttempts && showResult.quizResult.maxAttempts && (
+               <p className="text-slate-400 text-xs mb-4 italic">
+                  Lượt làm bài: {showResult.quizResult.attemptCount}/{showResult.quizResult.maxAttempts}
+               </p>
+            )}
+            
+            <Button 
+              onClick={() => setShowResult(null)} 
+              className="w-full bg-slate-800 hover:bg-slate-900 h-12 font-bold shadow-lg text-base"
+            >
+              Quay lại bài học
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

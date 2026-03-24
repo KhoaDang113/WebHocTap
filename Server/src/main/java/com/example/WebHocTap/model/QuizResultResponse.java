@@ -8,7 +8,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QuizResultResponse {
-    private Integer correct;
-    private Integer total;
+    private Double score;
+    private Boolean passed;
+    private Integer correctAnswers;
+    private Integer totalQuestions;
 }
 
