@@ -1,6 +1,13 @@
 // Export custom hooks from here
 export { useAuth, AuthProvider } from "./useAuth";
-export { useUsers } from "./useUsers";
+export {
+  useUsers,
+  useCreateUser,
+  useUpdateUser,
+  useDeleteUser,
+  useLockUser,
+  useUnlockUser,
+} from "./useUsers";
 export {
   useCategories,
   useCategory,

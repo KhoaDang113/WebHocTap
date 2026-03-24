@@ -139,6 +139,11 @@ public class AuthService {
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "User không tồn tại"));
 
+        // Kiểm tra tài khoản bị khóa
+        if (user.isLocked()) {
+            throw new AppException(ErrorCode.FORBIDDEN, "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ admin.");
+        }
+
         // Generate OTP and send to user's email
         String otpCode = String.format("%06d", new Random().nextInt(999999));
 
@@ -196,6 +201,11 @@ public class AuthService {
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "User không tồn tại"));
+
+        // Kiểm tra tài khoản bị khóa
+        if (user.isLocked()) {
+            throw new AppException(ErrorCode.FORBIDDEN, "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ admin.");
+        }
 
         // Delete session after successful use
         otpSessionRepository.delete(session);
