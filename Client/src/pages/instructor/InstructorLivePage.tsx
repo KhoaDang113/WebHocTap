@@ -53,7 +53,7 @@ export default function InstructorLivePage() {
   const createScheduleMutation = useCreateLiveSchedule();
   const cancelScheduleMutation = useCancelLiveSchedule();
 
-  const { data: schedules = [], isLoading: isLoadingSchedules } =
+  const { data: schedules = [] } =
     useMyLiveSchedules({ enabled: isTeacher });
 
   const [isFormOpen, setIsFormOpen] = useState(false);

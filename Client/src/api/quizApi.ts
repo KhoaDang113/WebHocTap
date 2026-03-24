@@ -1,10 +1,15 @@
 import axiosClient from './axiosClient'
-import type { ApiResponse, QuizDTO, QuizAttemptDTO, SubmitQuizResponse } from '@/types'
+import type { ApiResponse, QuizDTO, QuizAttemptDTO, SubmitQuizResponse, QuizAttemptHistoryResponse } from '@/types'
 
 const API_PREFIX = '/quizzes'
 
 export const getQuizById = async (quizId: string): Promise<ApiResponse<QuizDTO>> => {
   const response = await axiosClient.get(`${API_PREFIX}/${quizId}`)
+  return response.data
+}
+
+export const getQuizzesByCourse = async (courseId: string): Promise<ApiResponse<QuizDTO[]>> => {
+  const response = await axiosClient.get(`${API_PREFIX}/course/${courseId}`)
   return response.data
 }
 
@@ -20,9 +25,14 @@ export const getQuizAttempt = async (quizId: string): Promise<ApiResponse<QuizAt
 
 export const submitQuiz = async (
   quizId: string,
-  payload: { answers: any[] }
+  payload: { answers: Record<string, string> }
 ): Promise<ApiResponse<SubmitQuizResponse>> => {
   const response = await axiosClient.post(`${API_PREFIX}/${quizId}/submit`, payload)
+  return response.data
+}
+
+export const getMyAverageScore = async (): Promise<ApiResponse<number>> => {
+  const response = await axiosClient.get(`${API_PREFIX}/my-average-score`)
   return response.data
 }
 
@@ -44,5 +54,15 @@ export const updateQuiz = async (id: string, payload: any): Promise<ApiResponse<
 
 export const deleteQuiz = async (id: string): Promise<ApiResponse<void>> => {
   const response = await axiosClient.delete(`${API_PREFIX}/${id}`)
+  return response.data
+}
+
+export const getAllAttempts = async (): Promise<ApiResponse<QuizAttemptHistoryResponse[]>> => {
+  const response = await axiosClient.get(`${API_PREFIX}/attempts`)
+  return response.data
+}
+
+export const deleteAttempt = async (id: string): Promise<ApiResponse<void>> => {
+  const response = await axiosClient.delete(`${API_PREFIX}/attempts/${id}`)
   return response.data
 }

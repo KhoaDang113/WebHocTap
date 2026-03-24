@@ -9,5 +9,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class QuizTimerResponse {
     private Long remainingTime;
+    private Boolean submitted;
+    private String status;
+    private Double score;
+    private Integer correctAnswers;
+    private Integer totalQuestions;
+    private Integer maxAttempts;
+    private Integer attemptCount;
 }
 

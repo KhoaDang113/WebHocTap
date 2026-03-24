@@ -34,8 +34,9 @@ export default function AdminCreateLessonPage() {
     try {
       const url = await uploadImage(file);
       setImageUrl(url);
-    } catch (err) {
-      setError("Không thể tải ảnh lên. Vui lòng thử lại.");
+    } catch (err: any) {
+      const message = err.response?.data?.message || err.message;
+      setError(`Không thể tải ảnh lên: ${message}`);
     } finally {
       setIsUploadingImage(false);
     }
@@ -55,8 +56,9 @@ export default function AdminCreateLessonPage() {
     try {
       const url = await uploadVideo(file);
       setVideoUrl(url);
-    } catch (err) {
-      setError("Không thể tải video lên. Vui lòng thử lại.");
+    } catch (err: any) {
+      const message = err.response?.data?.message || err.message;
+      setError(`Không thể tải video lên: ${message}`);
     } finally {
       setIsUploadingVideo(false);
     }

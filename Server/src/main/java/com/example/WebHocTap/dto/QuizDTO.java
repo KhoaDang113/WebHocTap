@@ -15,6 +15,8 @@ public class QuizDTO {
     private String courseId;
     private String title;
     private Integer timeLimit;
+    private Integer maxAttempts;
+    private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<QuestionDTO> questions;
