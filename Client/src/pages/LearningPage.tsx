@@ -260,19 +260,23 @@ export default function LearningPage() {
         <section className={showResult ? "lg:col-span-12" : "lg:col-span-9"}>
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
               {activeLesson && (activeLesson.videoUrl || activeLesson.imageUrl) && (
-              <div className="aspect-video bg-black flex items-center justify-center">
+              <div className="w-full overflow-hidden">
                 {activeLesson.videoUrl ? (
-                  <video
-                    src={activeLesson.videoUrl}
-                    controls
-                    className="w-full h-full object-contain"
-                  />
+                  <div className="aspect-video bg-black">
+                    <video
+                      src={activeLesson.videoUrl}
+                      controls
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
                 ) : activeLesson.imageUrl ? (
-                  <img
-                    src={activeLesson.imageUrl}
-                    alt={activeLesson.title}
-                    className="w-full h-full object-contain bg-black"
-                  />
+                  <div className="flex items-center justify-center bg-slate-50 p-4">
+                    <img
+                      src={activeLesson.imageUrl}
+                      alt={activeLesson.title}
+                      className="max-w-full max-h-[60vh] object-contain rounded-lg"
+                    />
+                  </div>
                 ) : null}
               </div>
             )}

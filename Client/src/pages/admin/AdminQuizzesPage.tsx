@@ -38,6 +38,15 @@ export default function AdminQuizzesPage() {
   const [aiTimeLimit, setAiTimeLimit] = useState('600')
   const [aiMaxAttempts, setAiMaxAttempts] = useState('1')
   const [isAutoCreateQuiz, setIsAutoCreateQuiz] = useState(true)
+  const [isCreateMode, setIsCreateMode] = useState(false)
+
+  // Import questions from existing quiz
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
+  const [importQuizList, setImportQuizList] = useState<QuizDTO[]>([])
+  const [selectedImportQuizId, setSelectedImportQuizId] = useState('')
+  const [importQuizDetail, setImportQuizDetail] = useState<QuizDTO | null>(null)
+  const [selectedImportQuestions, setSelectedImportQuestions] = useState<Set<number>>(new Set())
+  const [isLoadingImport, setIsLoadingImport] = useState(false)
 
   const fetchData = async () => {
     setIsLoading(true)
@@ -77,6 +86,7 @@ export default function AdminQuizzesPage() {
     try {
       const res = await getQuizById(id)
       setEditingQuiz(res.data)
+      setIsCreateMode(false)
       setIsEditModalOpen(true)
     } catch (e) {
       alert("Lỗi tải thông tin bài thi để sửa")
@@ -89,22 +99,41 @@ export default function AdminQuizzesPage() {
       alert("Thiếu tên bài thi hoặc khóa học"); return;
     }
     try {
-      await updateQuiz(editingQuiz.id, {
-         courseId: editingQuiz.courseId,
-         title: editingQuiz.title,
-         timeLimit: editingQuiz.timeLimit,
-         maxAttempts: editingQuiz.maxAttempts,
-         status: editingQuiz.status,
-         questions: editingQuiz.questions?.map(q => ({
-             content: q.content,
-             answers: q.answers.map(a => ({
-                 content: a.content,
-                 isCorrect: !!a.isCorrect
-             }))
-         }))
-      })
-      alert("Cập nhật bài thi thành công")
+      if (isCreateMode) {
+        await createQuiz({
+          courseId: editingQuiz.courseId,
+          title: editingQuiz.title,
+          timeLimit: editingQuiz.timeLimit,
+          maxAttempts: editingQuiz.maxAttempts,
+          status: editingQuiz.status || 'DRAFT',
+          questions: editingQuiz.questions?.map(q => ({
+              content: q.content,
+              answers: q.answers.map(a => ({
+                  content: a.content,
+                  isCorrect: !!a.isCorrect
+              }))
+          }))
+        })
+        alert("Tạo bài thi thành công")
+      } else {
+        await updateQuiz(editingQuiz.id, {
+           courseId: editingQuiz.courseId,
+           title: editingQuiz.title,
+           timeLimit: editingQuiz.timeLimit,
+           maxAttempts: editingQuiz.maxAttempts,
+           status: editingQuiz.status,
+           questions: editingQuiz.questions?.map(q => ({
+               content: q.content,
+               answers: q.answers.map(a => ({
+                   content: a.content,
+                   isCorrect: !!a.isCorrect
+               }))
+           }))
+        })
+        alert("Cập nhật bài thi thành công")
+      }
       setIsEditModalOpen(false)
+      setIsCreateMode(false)
       fetchData()
     } catch (error) {
        alert("Có lỗi xảy ra khi cập nhật")
@@ -115,6 +144,53 @@ export default function AdminQuizzesPage() {
      if(!editingQuiz) return
      const newQuestions = [...(editingQuiz.questions || []), {id: `temp-${Date.now()}`, content: 'Câu hỏi mới', answers: [{id:`a1-${Date.now()}`, content:'Đáp án 1', isCorrect: true},{id:`a2-${Date.now()}`, content:'Đáp án 2', isCorrect: false},{id:`a3-${Date.now()}`, content:'Đáp án 3', isCorrect: false},{id:`a4-${Date.now()}`, content:'Đáp án 4', isCorrect: false}]}]
      setEditingQuiz({...editingQuiz, questions: newQuestions})
+  }
+
+  const openImportModal = async () => {
+    setIsImportModalOpen(true)
+    setSelectedImportQuizId('')
+    setImportQuizDetail(null)
+    setSelectedImportQuestions(new Set())
+    setImportQuizList(quizzes.filter(q => q.id !== editingQuiz?.id))
+  }
+
+  const handleSelectImportQuiz = async (quizId: string) => {
+    setSelectedImportQuizId(quizId)
+    setSelectedImportQuestions(new Set())
+    setIsLoadingImport(true)
+    try {
+      const res = await getQuizById(quizId)
+      setImportQuizDetail(res.data)
+    } catch {
+      alert('Không thể tải câu hỏi của quiz này')
+    } finally {
+      setIsLoadingImport(false)
+    }
+  }
+
+  const toggleImportQuestion = (idx: number) => {
+    setSelectedImportQuestions(prev => {
+      const next = new Set(prev)
+      if (next.has(idx)) next.delete(idx)
+      else next.add(idx)
+      return next
+    })
+  }
+
+  const handleConfirmImport = () => {
+    if (!editingQuiz || !importQuizDetail?.questions) return
+    const questionsToImport = importQuizDetail.questions
+      .filter((_, idx) => selectedImportQuestions.has(idx))
+      .map((q, i) => ({
+        ...q,
+        id: `imported-${Date.now()}-${i}`,
+        answers: q.answers.map((a, j) => ({ ...a, id: `imp-a${j}-${Date.now()}-${i}` }))
+      }))
+    setEditingQuiz({
+      ...editingQuiz,
+      questions: [...(editingQuiz.questions || []), ...questionsToImport]
+    })
+    setIsImportModalOpen(false)
   }
 
   const removeQuestion = (idx: number) => {
@@ -246,7 +322,31 @@ export default function AdminQuizzesPage() {
           >
             <Sparkles className="mr-2 h-4 w-4" /> Tạo bằng AI
           </Button>
-          <Button className="bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-200">
+          <Button 
+            onClick={() => {
+              setIsCreateMode(true)
+              setEditingQuiz({
+                id: '',
+                courseId: courses.length > 0 ? courses[0].id : '',
+                title: '',
+                timeLimit: 600,
+                maxAttempts: 1,
+                status: 'DRAFT',
+                questions: [{
+                  id: `temp-${Date.now()}`,
+                  content: '',
+                  answers: [
+                    { id: `a1-${Date.now()}`, content: '', isCorrect: true },
+                    { id: `a2-${Date.now()}`, content: '', isCorrect: false },
+                    { id: `a3-${Date.now()}`, content: '', isCorrect: false },
+                    { id: `a4-${Date.now()}`, content: '', isCorrect: false },
+                  ]
+                }]
+              })
+              setIsEditModalOpen(true)
+            }}
+            className="bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-200"
+          >
             <Plus className="mr-2 h-4 w-4" /> Tạo Quiz Mới
           </Button>
         </div>
@@ -576,7 +676,7 @@ export default function AdminQuizzesPage() {
             <div className="p-6 border-b border-slate-100 flex items-center justify-between shrink-0">
               <h3 className="text-xl font-bold flex items-center gap-2 text-slate-800">
                 <Edit2 className="text-blue-600 w-5 h-5" /> 
-                Chỉnh sửa Bài thi
+                {isCreateMode ? 'Tạo Bài thi mới' : 'Chỉnh sửa Bài thi'}
               </h3>
               <button 
                 onClick={() => setIsEditModalOpen(false)}
@@ -637,9 +737,14 @@ export default function AdminQuizzesPage() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="font-bold text-slate-800 text-lg">Danh sách câu hỏi ({editingQuiz.questions?.length || 0})</h4>
-                  <Button onClick={addQuestion} size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                    <Plus className="w-4 h-4 mr-1" /> Thêm câu hỏi
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button onClick={openImportModal} size="sm" variant="outline" className="border-purple-300 text-purple-600 hover:bg-purple-50">
+                      <Plus className="w-4 h-4 mr-1" /> Import từ Quiz khác
+                    </Button>
+                    <Button onClick={addQuestion} size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                      <Plus className="w-4 h-4 mr-1" /> Thêm câu hỏi
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="space-y-5">
@@ -698,8 +803,125 @@ export default function AdminQuizzesPage() {
             </div>
 
             <div className="p-4 border-t border-slate-100 flex justify-end gap-3 shrink-0 bg-white rounded-b-xl">
-              <Button onClick={() => setIsEditModalOpen(false)} variant="outline">Hủy bỏ</Button>
-              <Button onClick={handleSaveEdit} className="bg-blue-600 hover:bg-blue-700 text-white min-w-[120px]">Lưu thay đổi</Button>
+              <Button onClick={() => { setIsEditModalOpen(false); setIsCreateMode(false) }} variant="outline">Hủy bỏ</Button>
+              <Button onClick={handleSaveEdit} className="bg-blue-600 hover:bg-blue-700 text-white min-w-[120px]">{isCreateMode ? 'Tạo bài thi' : 'Lưu thay đổi'}</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Import Questions from Existing Quiz Modal */}
+      {isImportModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[85vh] flex flex-col animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between shrink-0">
+              <div>
+                <h3 className="text-xl font-bold flex items-center gap-2 text-slate-800">
+                  <HelpCircle className="text-purple-600 w-5 h-5" />
+                  Import câu hỏi từ Quiz có sẵn
+                </h3>
+                <p className="text-sm text-slate-500 mt-1">Chọn quiz, sau đó tick các câu hỏi muốn import.</p>
+              </div>
+              <button
+                onClick={() => setIsImportModalOpen(false)}
+                className="p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto flex-1 space-y-4 bg-slate-50/50">
+              {/* Quiz selector */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700">Chọn Quiz nguồn</label>
+                <select
+                  value={selectedImportQuizId}
+                  onChange={(e) => handleSelectImportQuiz(e.target.value)}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none bg-white"
+                >
+                  <option value="" disabled>-- Chọn quiz để lấy câu hỏi --</option>
+                  {importQuizList.map(q => (
+                    <option key={q.id} value={q.id}>{q.title} ({q.questions?.length || '?'} câu)</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Questions list */}
+              {isLoadingImport ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
+                </div>
+              ) : importQuizDetail?.questions && importQuizDetail.questions.length > 0 ? (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-slate-600 font-medium">
+                      {importQuizDetail.questions.length} câu hỏi — Đã chọn {selectedImportQuestions.size}
+                    </p>
+                    <button
+                      onClick={() => {
+                        if (selectedImportQuestions.size === importQuizDetail.questions!.length) {
+                          setSelectedImportQuestions(new Set())
+                        } else {
+                          setSelectedImportQuestions(new Set(importQuizDetail.questions!.map((_, i) => i)))
+                        }
+                      }}
+                      className="text-xs text-purple-600 hover:underline font-medium"
+                    >
+                      {selectedImportQuestions.size === importQuizDetail.questions.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
+                    </button>
+                  </div>
+                  {importQuizDetail.questions.map((q, idx) => (
+                    <label
+                      key={q.id || idx}
+                      className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                        selectedImportQuestions.has(idx)
+                          ? 'bg-purple-50 border-purple-300 shadow-sm'
+                          : 'bg-white border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedImportQuestions.has(idx)}
+                        onChange={() => toggleImportQuestion(idx)}
+                        className="w-4 h-4 mt-1 text-purple-600 rounded border-slate-300 focus:ring-purple-500"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-800 leading-relaxed">
+                          <span className="text-purple-600 font-bold mr-1">Câu {idx + 1}:</span>
+                          {q.content}
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {q.answers.map((a, aIdx) => (
+                            <span
+                              key={aIdx}
+                              className={`text-xs px-2 py-0.5 rounded-full ${
+                                a.isCorrect
+                                  ? 'bg-green-100 text-green-700 font-medium'
+                                  : 'bg-slate-100 text-slate-500'
+                              }`}
+                            >
+                              {a.content}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              ) : selectedImportQuizId ? (
+                <div className="text-center py-8 text-slate-500">Quiz này chưa có câu hỏi nào.</div>
+              ) : null}
+            </div>
+
+            <div className="p-4 border-t border-slate-100 flex justify-end gap-3 shrink-0 bg-white rounded-b-xl">
+              <Button variant="outline" onClick={() => setIsImportModalOpen(false)}>Hủy</Button>
+              <Button
+                onClick={handleConfirmImport}
+                disabled={selectedImportQuestions.size === 0}
+                className="bg-purple-600 hover:bg-purple-700 text-white min-w-[160px]"
+              >
+                Import {selectedImportQuestions.size} câu hỏi
+              </Button>
             </div>
           </div>
         </div>

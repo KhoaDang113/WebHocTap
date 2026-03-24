@@ -43,6 +43,9 @@ public class GlobalExceptionHandler {
             case FORBIDDEN:
                 status = HttpStatus.FORBIDDEN;
                 break;
+            case TOO_MANY_REQUESTS:
+                status = HttpStatus.TOO_MANY_REQUESTS;
+                break;
             default:
                 status = HttpStatus.INTERNAL_SERVER_ERROR;
                 break;

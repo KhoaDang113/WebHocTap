@@ -34,6 +34,9 @@ public class UploadService {
         } catch (Exception e) {
             System.err.println("Cloudinary Upload Error (Image): " + e.getMessage());
             e.printStackTrace();
+            if (e.getMessage() != null && e.getMessage().contains("concurrent requests")) {
+                throw new AppException(ErrorCode.TOO_MANY_REQUESTS, "Hệ thống tải ảnh đang bận do có quá nhiều yêu cầu cùng lúc. Vui lòng thử lại sau vài giây.", e);
+            }
             throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR, "Failed to upload image: " + e.getMessage(), e);
         }
     }
@@ -51,6 +54,9 @@ public class UploadService {
         } catch (Exception e) {
             System.err.println("Cloudinary Upload Error (Video): " + e.getMessage());
             e.printStackTrace();
+            if (e.getMessage() != null && e.getMessage().contains("concurrent requests")) {
+                throw new AppException(ErrorCode.TOO_MANY_REQUESTS, "Hệ thống tải video đang bận do có quá nhiều yêu cầu cùng lúc. Vui lòng thử lại sau vài giây.", e);
+            }
             throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR, "Failed to upload video: " + e.getMessage(), e);
         }
     }
