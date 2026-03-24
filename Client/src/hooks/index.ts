@@ -45,3 +45,9 @@ export {
   LIVE_SESSIONS_QUERY_KEY,
 } from "./useLiveSessions";
 export { useStompSubscription } from "./useStompSubscription";
+export {
+  useInstructorReviews,
+  useInstructorComments,
+  useToggleHideReview,
+  useToggleHideComment,
+} from "./useInteractions";

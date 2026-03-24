@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks";
 import { Edit, Save, X, Camera, Mail, User as UserIcon, Calendar, MapPin, Phone, BookOpen, Clock, ShieldCheck, PlayCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { getMyCourses } from "@/api/enrollmentApi";
 import type { CourseDTO } from "@/types";
 
 export function ProfilePage() {
   const { user } = useAuth();
+  const location = useLocation();
+  const coursesRef = useRef<HTMLDivElement>(null);
   
   // Trạng thái cho chế độ chỉnh sửa
   const [isEditing, setIsEditing] = useState(false);
@@ -64,6 +66,12 @@ export function ProfilePage() {
       fetchCourses();
     }
   }, [user, isEditing]);
+
+  useEffect(() => {
+    if (location.hash === '#my-courses' && coursesRef.current) {
+      coursesRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [location.hash]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0f0f19] pt-24 pb-12 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
@@ -259,10 +267,10 @@ export function ProfilePage() {
           </div>
         </div>
         
-        {/* Course Progress / Activity Summary (Static demo) */}
-        {!isEditing && (
+        {/* Course Progress / Activity Summary (Only for Students) */}
+        {!isEditing && user?.role === 'STUDENT' && (
           <div className="space-y-6">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 sm:p-8">
+            <div ref={coursesRef} id="learning-overview" className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 sm:p-8 scroll-mt-24">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Tổng quan học tập</h3>
               
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -271,7 +279,7 @@ export function ProfilePage() {
                   <div className="text-3xl font-bold text-slate-900 dark:text-white">{myCourses.length}</div>
                 </div>
                 
-                <div className="p-4 rounded-xl bg-green-50 dark:bg-green-500/10 border border-green-100 dark:border-green-500/20">
+                <div className="p-4 rounded-xl bg-green-50 dark:bg-green-500/10 border border-green-100 dark:border-green-100/20">
                   <div className="text-green-600 dark:text-green-400 font-semibold mb-1">Khóa học hoàn thành</div>
                   <div className="text-3xl font-bold text-slate-900 dark:text-white">0</div>
                 </div>

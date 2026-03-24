@@ -18,8 +18,12 @@ export const interactionsApi = {
   // Comments
   getLessonComments: (lessonId: string) =>
     axiosClient.get<ApiResponse<CommentDTO[]>>(`/interactions/comments/lesson/${lessonId}`),
-  addComment: (lessonId: string, content: string, parentId?: string | null) =>
-    axiosClient.post<ApiResponse<CommentDTO>>(`/interactions/comments`, { lessonId, content, parentId }),
+  getCourseComments: (courseId: string) =>
+    axiosClient.get<ApiResponse<CommentDTO[]>>(`/interactions/comments/course/${courseId}`),
+  addComment: (courseId: string, content: string, lessonId?: string | null, parentId?: string | null) =>
+    axiosClient.post<ApiResponse<CommentDTO>>(`/interactions/comments`, { courseId, lessonId, content, parentId }),
   toggleCommentLike: (commentId: string) =>
     axiosClient.post<ApiResponse<CommentDTO>>(`/interactions/comments/${commentId}/like`),
+  togglePinComment: (commentId: string) =>
+    axiosClient.patch<ApiResponse<CommentDTO>>(`/interactions/comments/${commentId}/toggle-pin`),
 }
