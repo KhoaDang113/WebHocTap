@@ -37,10 +37,16 @@ export {
   useEndLiveSession,
   LIVE_SESSIONS_QUERY_KEY,
 } from "./useLiveSessions";
-export { useStompSubscription } from "./useStompSubscription";
+export {
+  useMyLiveSchedules,
+  useCourseLiveSchedules,
+  useCreateLiveSchedule,
+  useCancelLiveSchedule,
+} from "./useLiveSchedules";
 export {
   useInstructorReviews,
   useInstructorComments,
   useToggleHideReview,
   useToggleHideComment,
 } from "./useInteractions";
+export { useStompSubscription } from "./useStompSubscription";
