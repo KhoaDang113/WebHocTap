@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -74,11 +75,15 @@ public class LiveSessionService {
         session.setCreatedAt(LocalDateTime.now().toString());
 
         LiveSession savedSession = liveSessionRepository.save(session);
-        
+        Map<String, Object> notificationPayload = Map.of(
+            "sessionId", savedSession.getId(),
+            "title", savedSession.getTitle(),
+            "roomName", savedSession.getRoomName(),
+            "roomUrl", "http://localhost:3000/live-session/" + savedSession.getId()
+        );
         // Notify clients about the new live session
         notificationService.notifyLiveSessionUpdate(course.getId());
-        System.out.println("Đã bắn tin nhắn đến phòng: " + course.getId());
-        
+        notificationService.notifyLiveSessionStart(course.getId(), notificationPayload);
         return mapToDTO(savedSession);
     }
 
@@ -139,10 +144,10 @@ public class LiveSessionService {
     public List<LiveSessionDTO> getAllSessions(String status) {
         User user = getCurrentUser();
         boolean isAdmin = user.getRole() == com.example.WebHocTap.common.UserRole.ADMIN;
-        
+        boolean isStudent = user.getRole() == com.example.WebHocTap.common.UserRole.STUDENT;
         List<LiveSession> sessions;
         org.springframework.data.domain.Sort sort = org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt");
-        if (isAdmin) {
+        if (isAdmin || isStudent) {
             sessions = liveSessionRepository.findAll(sort);
         } else {
             // Là Teacher, lấy các khóa học họ dạy

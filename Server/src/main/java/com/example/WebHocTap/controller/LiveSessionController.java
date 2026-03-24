@@ -52,7 +52,7 @@ public class LiveSessionController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN', 'STUDENT')")
     public ResponseEntity<ApiResponse<List<LiveSessionDTO>>> getAllSessions(
             @RequestParam(name = "status", required = false) String status) {
         return ResponseEntity.ok(ApiResponse.ok(liveSessionService.getAllSessions(status)));
