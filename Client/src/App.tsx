@@ -20,6 +20,8 @@ import {
   InstructorLessonsPage,
   InstructorLivePage,
   InstructorInteractionsPage,
+  InstructorQuizzesPage,
+  InstructorQuizAttemptsPage,
   FavoritesPage,
   QuizPage,
 } from "@/pages";
@@ -92,6 +94,8 @@ function App() {
                 <Route path="lessons" element={<InstructorLessonsPage />} />
                 <Route path="live" element={<InstructorLivePage />} />
                 <Route path="interactions" element={<InstructorInteractionsPage />} />
+                <Route path="quizzes" element={<InstructorQuizzesPage />} />
+                <Route path="quizzes/attempts" element={<InstructorQuizAttemptsPage />} />
               </Route>
 
               {/* Public routes - có Navbar */}

@@ -16,4 +16,6 @@ export { default as InstructorLessonsPage } from './instructor/InstructorLessons
 export { default as InstructorUpdateLessonPage } from './instructor/InstructorUpdateLessonPage'
 export { default as InstructorLivePage } from './instructor/InstructorLivePage'
 export { default as InstructorInteractionsPage } from './instructor/InstructorInteractionsPage'
+export { default as InstructorQuizzesPage } from './instructor/InstructorQuizzesPage'
+export { default as InstructorQuizAttemptsPage } from './instructor/InstructorQuizAttemptsPage'
 export { default as FavoritesPage } from './FavoritesPage'
