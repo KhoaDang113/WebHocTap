@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FavoriteButton } from "@/components/ui/FavoriteButton";
 import { ReviewSystem } from "@/components/ui/ReviewSystem";
+import { CommentSection } from "@/components/ui/CommentSection";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/Toast";
 
@@ -201,11 +202,14 @@ export default function CourseDetailPage() {
                 )}
               </div>
 
-              <div className="flex items-start justify-between mb-6">
-                <h1 className="text-3xl lg:text-4xl font-extrabold text-slate-900 leading-tight">
+               {/* Course Title and Actions */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <h1 className="text-4xl font-black text-slate-900 leading-tight">
                   {course.title}
                 </h1>
-                {user && <FavoriteButton courseId={id || ""} />}
+                <div className="flex items-center gap-3">
+                  {user?.role === "STUDENT" && <FavoriteButton courseId={id || ""} />}
+                </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-6 text-slate-600 mb-8 pb-8 border-b border-slate-100">
@@ -355,6 +359,14 @@ export default function CourseDetailPage() {
               {/* Review Section */}
               <div className="mt-12 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
                 <ReviewSystem courseId={id || ""} isEnrolled={isEnrolled} />
+              </div>
+
+              {/* Discussion Section (Course Level) */}
+              <div className="mt-6">
+                <CommentSection 
+                   courseId={id || ""} 
+                   instructorUsername={course.instructor}
+                />
               </div>
             </div>
 

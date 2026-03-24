@@ -47,10 +47,21 @@ export interface UserDTO {
   username: string;
   email: string;
   fullName: string;
+  avatarUrl?: string;
+  bio?: string;
   role: "ADMIN" | "TEACHER" | "STUDENT";
+  isLocked: boolean;
+  pendingTeacherRequest: boolean;
   createdAt: string;
   updatedAt: string;
-  isBlocked?: boolean;
+}
+
+export interface UserPayload {
+  username: string;
+  email: string;
+  password?: string;
+  fullName: string;
+  role: "TEACHER" | "STUDENT";
 }
 
 // Course management
@@ -195,6 +206,8 @@ export interface ReviewDTO {
   createdAt: string;
   userFullName?: string;
   userAvatar?: string;
+  courseTitle?: string;
+  isHidden?: boolean;
 }
 
 export interface CommentDTO {
@@ -208,6 +221,11 @@ export interface CommentDTO {
   userFullName?: string;
   userAvatar?: string;
   replies?: CommentDTO[];
+  lessonTitle?: string;
+  courseTitle?: string;
+  isHidden?: boolean;
+  isPinned?: boolean;
+  userRole?: string;
 }
 
 // Instructor Stats
@@ -242,4 +260,23 @@ export interface CreateLiveSessionRequest {
   title: string;
   description: string;
   courseId: string;
+}
+
+// Live Schedule management
+export interface LiveScheduleDTO {
+  id: string;
+  courseId: string;
+  title: string;
+  description: string;
+  startTime: string; // ISO String
+  status: "SCHEDULED" | "DONE" | "CANCELLED";
+  teacherId: string;
+  isReminded: boolean;
+}
+
+export interface CreateLiveScheduleRequest {
+  courseId: string;
+  title: string;
+  description: string;
+  startTime: string;
 }

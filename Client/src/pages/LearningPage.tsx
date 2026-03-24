@@ -314,7 +314,11 @@ export default function LearningPage() {
               {/* Comments Section */}
               {activeLesson && (
                 <div className="border-t border-slate-100 pt-6 mt-6">
-                  <CommentSection lessonId={activeLesson.id} isEnrolled={isEnrolled} />
+                  <CommentSection 
+                    courseId={course.id}
+                    lessonId={activeLesson.id} 
+                    instructorUsername={course.instructor}
+                  />
                 </div>
               )}
             </div>

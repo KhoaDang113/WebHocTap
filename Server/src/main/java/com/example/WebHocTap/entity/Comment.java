@@ -21,7 +21,8 @@ public class Comment {
     @Id
     private String id;
     private String userId;
-    private String lessonId;
+    private String lessonId; // null nếu bình luận ở trang khóa học
+    private String courseId; // Bắt buộc
     private String content;
     private String parentId; // null nếu là comment gốc, có giá trị nếu là reply
     
@@ -30,4 +31,12 @@ public class Comment {
 
     @CreatedDate
     private LocalDateTime createdAt;
+
+    @Builder.Default
+    private boolean hidden = false;
+
+    @Builder.Default
+    private boolean pinned = false;
+
+    private String userRole; // ADMIN, INSTRUCTOR, STUDENT, GUEST
 }

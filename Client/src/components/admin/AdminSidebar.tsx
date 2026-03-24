@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Users, BookOpen, Video, LogOut, ChevronLeft, ChevronRight, Layers, HelpCircle, History } from "lucide-react";
+import { LayoutDashboard, Users, BookOpen, Video, LogOut, ChevronLeft, ChevronRight, Layers, HelpCircle, History, Home  } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks";
 
@@ -17,6 +17,7 @@ export default function AdminSidebar() {
   };
 
   const links = [
+    { to: "/", icon: <Home size={20} />, label: "Trang chủ" },
     { to: "/admin", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
     { to: "/admin/users", icon: <Users size={20} />, label: "Quản lý User" },
     { to: "/admin/categories", icon: <Layers size={20} />, label: "Danh mục" },
@@ -29,6 +30,7 @@ export default function AdminSidebar() {
 
   const isActive = (path: string) => {
     if (path === "/admin") return location.pathname === "/admin";
+    if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
   };
 

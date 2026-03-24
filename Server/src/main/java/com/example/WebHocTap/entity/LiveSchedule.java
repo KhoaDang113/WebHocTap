@@ -4,28 +4,33 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "reviews")
-public class Review {
+@Builder
+@Document(collection = "live_schedules")
+public class LiveSchedule {
     @Id
     private String id;
-    private String userId;
-    private String courseId;
-    private int rating; // 1-5
-    private String comment;
-
-    @CreatedDate
-    private LocalDateTime createdAt;
     
-    @Builder.Default
-    private boolean hidden = false;
+    private String courseId;
+    private String title;
+    private String description;
+    
+    private LocalDateTime startTime;
+    
+    // SCHEDULED, DONE, CANCELLED
+    private String status;
+    
+    private String teacherId;
+    
+    private boolean isReminded;
+    
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

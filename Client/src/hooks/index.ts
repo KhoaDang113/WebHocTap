@@ -1,6 +1,13 @@
 // Export custom hooks from here
 export { useAuth, AuthProvider } from "./useAuth";
-export { useUsers } from "./useUsers";
+export {
+  useUsers,
+  useCreateUser,
+  useUpdateUser,
+  useDeleteUser,
+  useLockUser,
+  useUnlockUser,
+} from "./useUsers";
 export {
   useCategories,
   useCategory,
@@ -37,5 +44,17 @@ export {
   useEndLiveSession,
   LIVE_SESSIONS_QUERY_KEY,
 } from "./useLiveSessions";
+export {
+  useMyLiveSchedules,
+  useCourseLiveSchedules,
+  useCreateLiveSchedule,
+  useCancelLiveSchedule,
+} from "./useLiveSchedules";
+export {
+  useInstructorReviews,
+  useInstructorComments,
+  useToggleHideReview,
+  useToggleHideComment,
+} from "./useInteractions";
 export { useStompSubscription } from "./useStompSubscription";
 export { useCourseQuizzes, useMyAverageScore } from "./useQuizzes";

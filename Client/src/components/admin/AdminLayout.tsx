@@ -1,7 +1,7 @@
 import { Outlet, Navigate } from "react-router-dom";
 import AdminSidebar from "./AdminSidebar";
 import AdminHeader from "./AdminHeader";
-import { Footer } from "@/components";
+
 import { useAuth } from "@/hooks";
 
 export default function AdminLayout() {
@@ -40,7 +40,7 @@ export default function AdminLayout() {
         <AdminHeader />
         <main className="flex-1 overflow-y-auto">
           <Outlet />
-          <Footer />
+
         </main>
       </div>
     </div>

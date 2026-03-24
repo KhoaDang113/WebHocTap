@@ -17,9 +17,11 @@ import {
   InstructorCoursesPage,
   InstructorCreateLessonPage,
   InstructorLivePage,
+  InstructorInteractionsPage,
   FavoritesPage,
   QuizPage,
 } from "@/pages";
+import AccountLockedPage from "@/pages/AccountLockedPage";
 import LiveRoomPage from "@/pages/live/LiveRoomPage";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { InstructorLayout } from "@/components/instructor/InstructorLayout";
@@ -82,6 +84,7 @@ function App() {
                   element={<InstructorCreateLessonPage />}
                 />
                 <Route path="live" element={<InstructorLivePage />} />
+                <Route path="interactions" element={<InstructorInteractionsPage />} />
               </Route>
 
               {/* Public routes - có Navbar */}
@@ -110,6 +113,7 @@ function App() {
                           element={<ChangePasswordPage />}
                         />
                         <Route path="/favorites" element={<FavoritesPage />} />
+                        <Route path="/account-locked" element={<AccountLockedPage />} />
                         <Route path="*" element={<NotFoundPage />} />
                       </Routes>
                     </main>

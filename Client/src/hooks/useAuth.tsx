@@ -50,7 +50,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const handleError = (err: unknown, defaultMsg: string) => {
-        const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || defaultMsg
+        const axiosErr = err as { response?: { status?: number; data?: { message?: string } } }
+        const msg = axiosErr?.response?.data?.message || defaultMsg
+        // Nếu tài khoản bị khóa (403 Forbidden), redirect đến trang thông báo
+        if (axiosErr?.response?.status === 403) {
+            localStorage.removeItem('accessToken')
+            localStorage.removeItem('refreshToken')
+            localStorage.removeItem('user')
+            setUser(null)
+            window.location.href = '/account-locked'
+            return
+        }
         setError(msg)
         throw err
     }
@@ -62,7 +72,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const res = await axiosClient.post<ApiResponse<{ message: string; email: string }>>('/auth/login', credentials)
             return res.data.data.email
         } catch (err: unknown) {
-            handleError(err, '��ng nh?p th?t b?i')
+            const axiosErr = err as { response?: { status?: number } }
+            if (axiosErr?.response?.status === 403) {
+                window.location.href = '/account-locked'
+                return ''
+            }
+            handleError(err, 'Đăng nhập thất bại')
             return ''
         } finally {
             setLoading(false)
@@ -76,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const res = await axiosClient.post<ApiResponse<AuthResponse>>('/auth/login/verify', info)
             return saveAuth(res.data.data)
         } catch (err: unknown) {
-            handleError(err, 'X�c th?c m? OTP th?t b?i')
+            handleError(err, 'Xác thực mã OTP thất bại')
         } finally {
             setLoading(false)
         }
@@ -88,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             await axiosClient.post('/auth/register/request-otp', info)
         } catch (err: unknown) {
-            handleError(err, 'L?i khi g?i m? OTP')
+            handleError(err, 'Lỗi khi gửi mã OTP')
         } finally {
             setLoading(false)
         }
@@ -101,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const res = await axiosClient.post<ApiResponse<AuthResponse>>('/auth/register/verify', info)
             saveAuth(res.data.data)
         } catch (err: unknown) {
-            handleError(err, 'X�c th?c m? OTP th?t b?i')
+            handleError(err, 'Xác thực mã OTP thất bại')
         } finally {
             setLoading(false)
         }
@@ -114,7 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const res = await axiosClient.post<ApiResponse<AuthResponse>>('/auth/oauth2/google', { idToken })
             return saveAuth(res.data.data)
         } catch (err: unknown) {
-            handleError(err, '��ng nh?p v?i Google th?t b?i')
+            handleError(err, 'Đăng nhập với Google thất bại')
         } finally {
             setLoading(false)
         }

@@ -145,16 +145,22 @@ export function ReviewSystem({ courseId, isEnrolled }: ReviewSystemProps) {
             <p className="text-text-secondary text-sm">Chưa có đánh giá nào cho khóa học này.</p>
           ) : (
             reviews.map((review) => (
-              <div key={review.id} className="bg-surface-2 p-4 rounded-xl border border-border">
+              <div key={review.id} className={`p-4 rounded-xl border transition-all ${review.isHidden ? 'bg-red-50/50 border-red-100 opacity-80' : 'bg-surface-2 border-border'}`}>
+                {review.isHidden && (
+                  <div className="mb-3 px-4 py-2 bg-red-100/50 text-red-700 rounded-xl text-xs font-bold flex items-center gap-2 border border-red-200">
+                    <span className="flex h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
+                    Đánh giá của bạn đã bị giảng viên ẩn (Chỉ bạn thấy thông báo này)
+                  </div>
+                )}
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-3">
                     <img
                       src={review.userAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(review.userFullName || 'User')}&background=random`}
                       alt={review.userFullName}
-                      className="w-10 h-10 rounded-full"
+                      className={`w-10 h-10 rounded-full ${review.isHidden ? 'grayscale' : ''}`}
                     />
                     <div>
-                      <p className="font-medium">{review.userFullName || 'Người học'}</p>
+                      <p className="font-medium text-slate-900">{review.userFullName || 'Người học'}</p>
                       <p className="text-xs text-text-secondary">
                         {new Date(review.createdAt).toLocaleDateString('vi-VN')}
                       </p>
@@ -169,7 +175,9 @@ export function ReviewSystem({ courseId, isEnrolled }: ReviewSystemProps) {
                     ))}
                   </div>
                 </div>
-                <p className="text-text max-w-none text-sm leading-relaxed mt-2">{review.comment}</p>
+                <p className={`max-w-none text-sm leading-relaxed mt-2 ${review.isHidden ? 'text-slate-400 italic' : 'text-text'}`}>
+                  {review.comment}
+                </p>
               </div>
             ))
           )}
