@@ -9,7 +9,8 @@ public enum ErrorCode {
     UNAUTHORIZED(5, "Unauthorized"),
     FORBIDDEN(6, "Forbidden"),
     VALIDATION_ERROR(7, "Validation error"),
-    INTERNAL_SERVER_ERROR(8, "Internal server error");
+    INTERNAL_SERVER_ERROR(8, "Internal server error"),
+    TOO_MANY_REQUESTS(9, "Too many requests");
 
     private final int code;
     private final String message;

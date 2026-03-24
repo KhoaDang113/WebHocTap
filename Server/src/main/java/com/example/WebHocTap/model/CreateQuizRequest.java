@@ -13,5 +13,7 @@ public class CreateQuizRequest {
     private String courseId;
     private String title;
     private Integer timeLimit;
+    private Integer maxAttempts;
+    private String status;
     private List<CreateQuestionRequest> questions;
 }

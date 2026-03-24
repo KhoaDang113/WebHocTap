@@ -7,10 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class QuizResultResponse {
-    private Double score;
-    private Boolean passed;
-    private Integer correctAnswers;
-    private Integer totalQuestions;
+public class AiQuizGenerateRequest {
+    private String topic;
+    private int numQuestions;
 }
-

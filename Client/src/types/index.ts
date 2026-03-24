@@ -133,6 +133,7 @@ export interface LessonPayload {
 export interface AnswerDTO {
   id: string;
   content: string;
+  isCorrect?: boolean;
 }
 
 export interface QuestionDTO {
@@ -148,6 +149,8 @@ export interface QuizDTO {
   title: string;
   description?: string;
   timeLimit: number;
+  status: "DRAFT" | "PUBLIC" | "PRIVATE";
+  maxAttempts?: number;
   questions?: QuestionDTO[];
 }
 
@@ -155,7 +158,27 @@ export interface QuizAttemptDTO {
   id: string;
   quizId: string;
   remainingTime: number;
-  status: "IN_PROGRESS" | "COMPLETED" | "EXPIRED";
+  status: "IN_PROGRESS" | "COMPLETED" | "EXPIRED" | "MAX_ATTEMPTS_REACHED" | "NOT_STARTED";
+  score?: number;
+  correctAnswers?: number;
+  totalQuestions?: number;
+  maxAttempts?: number;
+  attemptCount?: number;
+}
+
+export interface QuizAttemptHistoryResponse {
+  id: string;
+  userId: string;
+  fullName: string;
+  username: string;
+  quizId: string;
+  quizTitle: string;
+  courseTitle: string;
+  startTime: string;
+  endTime: string;
+  submitted: boolean;
+  correctAnswers?: number;
+  totalQuestions?: number;
   score?: number;
 }
 
