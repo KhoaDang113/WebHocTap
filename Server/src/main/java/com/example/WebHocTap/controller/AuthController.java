@@ -31,6 +31,7 @@ public class AuthController {
         Map<String, Object> data = Map.of(
                 "id", user.getId(),
                 "username", user.getUsername(),
+                "fullName", user.getFullName() != null ? user.getFullName() : "",
                 "role", user.getRole().name(),
                 "avatarUrl", user.getAvatarUrl() != null ? user.getAvatarUrl() : "",
                 "createdAt", user.getCreatedAt() != null ? user.getCreatedAt().toString() : ""

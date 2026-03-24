@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth, useUsers, useCourses, useLiveSessions } from "@/hooks";
 import { getAllQuizzes } from "@/api/quizApi";
 import ExportReportModal from "@/components/admin/ExportReportModal";
+import RecentActivitiesModal from "@/components/admin/RecentActivitiesModal";
 
 const MONTH_NAMES = [
   "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
@@ -36,6 +37,7 @@ export default function AdminDashboardPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === "ADMIN";
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showActivitiesModal, setShowActivitiesModal] = useState(false);
 
   const { data: users = [], isLoading: isLoadingUsers } = useUsers({ enabled: isAdmin });
   const { data: courses = [], isLoading: isLoadingCourses } = useCourses({ enabled: isAdmin });
@@ -235,7 +237,7 @@ export default function AdminDashboardPage() {
               <Activity className="w-5 h-5 text-blue-500" />
               Hoạt động gần đây
             </h3>
-            <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">Xem tất cả</button>
+            <button onClick={() => setShowActivitiesModal(true)} className="text-sm text-blue-600 hover:text-blue-800 font-medium">Xem tất cả</button>
           </div>
           <div className="p-5">
             <div className="relative border-l border-slate-200 ml-3 space-y-6">
@@ -257,6 +259,7 @@ export default function AdminDashboardPage() {
       </div>
 
       <ExportReportModal isOpen={showExportModal} onClose={() => setShowExportModal(false)} />
+      <RecentActivitiesModal isOpen={showActivitiesModal} onClose={() => setShowActivitiesModal(false)} />
     </div>
   );
 }
