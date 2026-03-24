@@ -12,6 +12,8 @@ export { QuizPage } from "./QuizPage";
 export * from './instructor/InstructorDashboardPage'
 export * from './instructor/InstructorCoursesPage'
 export * from './instructor/InstructorCreateLessonPage'
+export { default as InstructorLessonsPage } from './instructor/InstructorLessonsPage'
+export { default as InstructorUpdateLessonPage } from './instructor/InstructorUpdateLessonPage'
 export { default as InstructorLivePage } from './instructor/InstructorLivePage'
 export { default as InstructorInteractionsPage } from './instructor/InstructorInteractionsPage'
 export { default as FavoritesPage } from './FavoritesPage'

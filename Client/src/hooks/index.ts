@@ -26,6 +26,7 @@ export {
 } from "./useCourses";
 export {
   useAllLessons,
+  useLesson,
   useLessons,
   useCreateLesson,
   useUpdateLesson,

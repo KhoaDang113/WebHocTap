@@ -223,6 +223,7 @@ export interface CommentDTO {
   id: string;
   userId: string;
   lessonId: string;
+  courseId?: string;
   content: string;
   parentId: string | null;
   likes: string[];

@@ -16,6 +16,8 @@ import {
   InstructorDashboardPage,
   InstructorCoursesPage,
   InstructorCreateLessonPage,
+  InstructorUpdateLessonPage,
+  InstructorLessonsPage,
   InstructorLivePage,
   InstructorInteractionsPage,
   FavoritesPage,
@@ -83,6 +85,11 @@ function App() {
                   path="courses/:courseId/lessons/create"
                   element={<InstructorCreateLessonPage />}
                 />
+                <Route
+                  path="courses/:courseId/lessons/:lessonId/edit"
+                  element={<InstructorUpdateLessonPage />}
+                />
+                <Route path="lessons" element={<InstructorLessonsPage />} />
                 <Route path="live" element={<InstructorLivePage />} />
                 <Route path="interactions" element={<InstructorInteractionsPage />} />
               </Route>

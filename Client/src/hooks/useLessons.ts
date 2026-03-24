@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   getLessons,
   getLessonsByCourse,
+  getLessonById,
   createLesson,
   updateLesson,
   deleteLesson,
@@ -25,6 +26,17 @@ export const useLessons = (courseId: string) => {
     queryKey: [LESSONS_QUERY_KEY, courseId],
     queryFn: () => getLessonsByCourse(courseId),
     enabled: !!courseId,
+    retry: false,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export const useLesson = (lessonId: string) => {
+  return useQuery({
+    queryKey: [LESSONS_QUERY_KEY, 'detail', lessonId],
+    queryFn: () => getLessonById(lessonId),
+    enabled: !!lessonId,
     retry: false,
     refetchOnWindowFocus: false,
     staleTime: 5 * 60 * 1000,
