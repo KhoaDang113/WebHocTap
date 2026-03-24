@@ -1,6 +1,7 @@
 import { Heart } from 'lucide-react'
 import { interactionsApi } from '@/api/interactionsApi'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useAuth } from '@/hooks'
 
 interface FavoriteButtonProps {
   courseId: string
@@ -9,6 +10,12 @@ interface FavoriteButtonProps {
 
 export function FavoriteButton({ courseId, className = '' }: FavoriteButtonProps) {
   const queryClient = useQueryClient()
+  const { user } = useAuth()
+
+  // Ẩn nút nếu không phải là học viên (STUDENT)
+  if (!user || user.role !== 'STUDENT') {
+    return null
+  }
 
   const { data, isLoading } = useQuery({
     queryKey: ['favorite', courseId],
@@ -38,7 +45,7 @@ export function FavoriteButton({ courseId, className = '' }: FavoriteButtonProps
         mutation.mutate()
       }}
       className={`p-2 rounded-full transition-colors flex items-center justify-center ${
-        isFavorite ? 'bg-error/10 text-error hover:bg-error/20' : 'bg-surface-2 text-text-secondary hover:bg-surface-3'
+        isFavorite ? 'bg-red-50 text-red-500 hover:bg-red-100 shadow-sm border border-red-100' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
       } ${className}`}
       disabled={mutation.isPending}
       title={isFavorite ? 'Bỏ yêu thích' : 'Yêu thích'}

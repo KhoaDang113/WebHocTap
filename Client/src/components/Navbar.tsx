@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks'
-import { LogIn, UserPlus, LogOut, User, Key, ChevronDown, Menu, BookOpen, LayoutDashboard, Heart } from 'lucide-react'
+import { LogIn, UserPlus, LogOut, User, Key, ChevronDown, Menu, BookOpen, LayoutDashboard, Heart, ShieldCheck } from 'lucide-react'
 
 const Navbar = () => {
     const location = useLocation()
@@ -114,6 +114,17 @@ const Navbar = () => {
                                         <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user.username}</p>
                                     </div>
                                     
+                                    {user.role === 'ADMIN' && (
+                                        <Link 
+                                            to="/admin" 
+                                            className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                                            onClick={() => setIsDropdownOpen(false)}
+                                        >
+                                            <ShieldCheck size={16} />
+                                            Quản lý hệ thống
+                                        </Link>
+                                    )}
+
                                     {user.role === 'TEACHER' && (
                                         <a 
                                             href="/instructor/dashboard" 
@@ -136,28 +147,32 @@ const Navbar = () => {
                                         Hồ sơ cá nhân
                                     </Link>
                                     
-                                    <Link 
-                                        to="/profile#my-courses" 
-                                        className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                                        onClick={() => {
-                                            setIsDropdownOpen(false);
-                                            if (location.pathname === '/profile') {
-                                                document.getElementById('learning-overview')?.scrollIntoView({ behavior: 'smooth' });
-                                            }
-                                        }}
-                                    >
-                                        <BookOpen size={16} />
-                                        Khóa học của tôi
-                                    </Link>
-                                    
-                                    <Link 
-                                        to="/favorites" 
-                                        className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-pink-600 dark:hover:text-pink-400 transition-colors"
-                                        onClick={() => setIsDropdownOpen(false)}
-                                    >
-                                        <Heart size={16} />
-                                        Khóa học yêu thích
-                                    </Link>
+                                    {user.role === 'STUDENT' && (
+                                        <>
+                                            <Link 
+                                                to="/profile#my-courses" 
+                                                className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                                onClick={() => {
+                                                    setIsDropdownOpen(false);
+                                                    if (location.pathname === '/profile') {
+                                                        document.getElementById('learning-overview')?.scrollIntoView({ behavior: 'smooth' });
+                                                    }
+                                                }}
+                                            >
+                                                <BookOpen size={16} />
+                                                Khóa học của tôi
+                                            </Link>
+                                            
+                                            <Link 
+                                                to="/favorites" 
+                                                className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-pink-600 dark:hover:text-pink-400 transition-colors"
+                                                onClick={() => setIsDropdownOpen(false)}
+                                            >
+                                                <Heart size={16} />
+                                                Khóa học yêu thích
+                                            </Link>
+                                        </>
+                                    )}
                                     
                                     <Link 
                                         to="/change-password" 
@@ -242,6 +257,16 @@ const Navbar = () => {
                                         </span>
                                     </div>
                                 </div>
+                                {user.role === 'ADMIN' && (
+                                    <Link 
+                                        to="/admin" 
+                                        className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg"
+                                        onClick={() => setIsMenuOpen(false)}
+                                    >
+                                        <ShieldCheck size={16} />
+                                        Quản lý hệ thống
+                                    </Link>
+                                )}
                                 {user.role === 'TEACHER' && (
                                     <a 
                                         href="/instructor/dashboard" 
@@ -262,27 +287,31 @@ const Navbar = () => {
                                     <User size={16} />
                                     Hồ sơ cá nhân
                                 </Link>
-                                <Link 
-                                    to="/favorites" 
-                                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg"
-                                    onClick={() => setIsMenuOpen(false)}
-                                >
-                                    <Heart size={16} />
-                                    Khóa học yêu thích
-                                </Link>
-                                <Link 
-                                    to="/profile#my-courses" 
-                                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg"
-                                    onClick={() => {
-                                        setIsMenuOpen(false);
-                                        if (location.pathname === '/profile') {
-                                            document.getElementById('learning-overview')?.scrollIntoView({ behavior: 'smooth' });
-                                        }
-                                    }}
-                                >
-                                    <BookOpen size={16} />
-                                    Khóa học của tôi
-                                </Link>
+                                {user.role === 'STUDENT' && (
+                                    <>
+                                        <Link 
+                                            to="/favorites" 
+                                            className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg"
+                                            onClick={() => setIsMenuOpen(false)}
+                                        >
+                                            <Heart size={16} />
+                                            Khóa học yêu thích
+                                        </Link>
+                                        <Link 
+                                            to="/profile#my-courses" 
+                                            className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg"
+                                            onClick={() => {
+                                                setIsMenuOpen(false);
+                                                if (location.pathname === '/profile') {
+                                                    document.getElementById('learning-overview')?.scrollIntoView({ behavior: 'smooth' });
+                                                }
+                                            }}
+                                        >
+                                            <BookOpen size={16} />
+                                            Khóa học của tôi
+                                        </Link>
+                                    </>
+                                )}
                                 <Link 
                                     to="/change-password" 
                                     className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg"
