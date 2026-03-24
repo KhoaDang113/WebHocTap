@@ -40,9 +40,12 @@ public class UserService {
 
     public UserDTO updateProfile(UpdateProfileRequest req) {
         User user = getCurrentUser();
-        if (req.getFullName() != null) user.setFullName(req.getFullName());
-        if (req.getAvatarUrl() != null) user.setAvatarUrl(req.getAvatarUrl());
-        if (req.getBio() != null) user.setBio(req.getBio());
+        if (req.getFullName() != null)
+            user.setFullName(req.getFullName());
+        if (req.getAvatarUrl() != null)
+            user.setAvatarUrl(req.getAvatarUrl());
+        if (req.getBio() != null)
+            user.setBio(req.getBio());
         return toDTO(userRepository.save(user));
     }
 
@@ -156,10 +159,10 @@ public class UserService {
     }
 
     public void deleteUser(String id) {
-        if (!userRepository.existsById(id)) {
-            throw new AppException(ErrorCode.NOT_FOUND, "User not found with id: " + id);
-        }
-        userRepository.deleteById(id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "User not found with id: " + id));
+        user.setDeleted(true);
+        userRepository.save(user);
     }
 
     // ─── Mapper ───────────────────────────────────────────────────────────────
@@ -174,6 +177,7 @@ public class UserService {
         dto.setBio(user.getBio());
         dto.setRole(user.getRole());
         dto.setLocked(user.isLocked());
+        dto.setDeleted(user.isDeleted());
         dto.setPendingTeacherRequest(user.isPendingTeacherRequest());
         dto.setCreatedAt(user.getCreatedAt());
         dto.setUpdatedAt(user.getUpdatedAt());

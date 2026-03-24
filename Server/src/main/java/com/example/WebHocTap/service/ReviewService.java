@@ -32,7 +32,8 @@ public class ReviewService {
         }
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED, "User not found with username: " + username));
+                .orElseThrow(
+                        () -> new AppException(ErrorCode.UNAUTHORIZED, "User not found with username: " + username));
 
         // Only students can review
         if (user.getRole() != UserRole.STUDENT) {
@@ -41,8 +42,9 @@ public class ReviewService {
 
         // Check if enrolled using ID
         if (!enrollmentRepository.existsByUserIdAndCourseId(user.getId(), request.getCourseId())) {
-            throw new AppException(ErrorCode.FORBIDDEN, 
-                String.format("You must enroll in course [%s] to review it. (User ID: %s)", request.getCourseId(), user.getId()));
+            throw new AppException(ErrorCode.FORBIDDEN,
+                    String.format("You must enroll in course [%s] to review it. (User ID: %s)", request.getCourseId(),
+                            user.getId()));
         }
 
         // Check if already reviewed using ID (consistent storage)
@@ -56,17 +58,18 @@ public class ReviewService {
                 .rating(request.getRating())
                 .comment(request.getComment())
                 .build();
-        
+
         Review saved = reviewRepository.save(review);
         return mapToDTO(saved);
     }
 
     public List<ReviewDTO> getInstructorReviews(String instructorUsername) {
-        List<com.example.WebHocTap.entity.Course> instructorCourses = courseRepository.findByInstructor(instructorUsername);
+        List<com.example.WebHocTap.entity.Course> instructorCourses = courseRepository
+                .findByInstructor(instructorUsername);
         List<String> courseIds = instructorCourses.stream()
                 .map(com.example.WebHocTap.entity.Course::getId)
                 .collect(Collectors.toList());
-        
+
         return reviewRepository.findByCourseIdIn(courseIds)
                 .stream()
                 .map(this::mapToDTO)
@@ -76,18 +79,18 @@ public class ReviewService {
     public ReviewDTO toggleHideReview(String username, String reviewId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Review not found"));
-        
+
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED, "User not found"));
-        
+
         com.example.WebHocTap.entity.Course course = courseRepository.findById(review.getCourseId())
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Course not found"));
-        
+
         // Allowed if user is Admin OR course owner
         if (user.getRole() != UserRole.ADMIN && !course.getInstructor().equals(username)) {
             throw new AppException(ErrorCode.FORBIDDEN, "You don't have permission to manage this review");
         }
-        
+
         review.setHidden(!review.isHidden());
         return mapToDTO(reviewRepository.save(review));
     }
@@ -106,7 +109,7 @@ public class ReviewService {
     private ReviewDTO mapToDTO(Review review) {
         User user = userRepository.findById(review.getUserId()).orElse(null);
         com.example.WebHocTap.entity.Course course = courseRepository.findById(review.getCourseId()).orElse(null);
-        
+
         return ReviewDTO.builder()
                 .id(review.getId())
                 .userId(review.getUserId())

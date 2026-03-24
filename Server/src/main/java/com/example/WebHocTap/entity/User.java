@@ -39,6 +39,8 @@ public class User {
 
     private boolean isLocked = false;
 
+    private boolean isDeleted = false;
+
     private boolean pendingTeacherRequest = false;
 
     @CreatedDate

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import axiosClient from '../api/axiosClient'
 import type { User, AuthResponse, LoginRequest, RegisterRequest, VerifyOtpRequest, ApiResponse } from '../types'
 
@@ -40,10 +40,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
+    // Fetch fresh user data from backend on app load to keep avatarUrl in sync with DB
+    useEffect(() => {
+        const refreshUserProfile = async () => {
+            const token = localStorage.getItem('accessToken')
+            if (!token || !user) return
+            try {
+                const res = await axiosClient.get<ApiResponse<{ id: string; username: string; role: string; avatarUrl: string; createdAt: string }>>('/auth/me')
+                const data = res.data.data
+                const updatedUser: User = {
+                    id: data.id,
+                    username: data.username,
+                    role: data.role as User['role'],
+                    avatarUrl: data.avatarUrl || undefined,
+                    createdAt: data.createdAt,
+                }
+                localStorage.setItem('user', JSON.stringify(updatedUser))
+                setUser(updatedUser)
+            } catch {
+                // Silently fail - user can still use cached data
+            }
+        }
+        refreshUserProfile()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
     const saveAuth = (data: AuthResponse) => {
         localStorage.setItem('accessToken', data.accessToken)
         localStorage.setItem('refreshToken', data.refreshToken)
-        const userData: User = { id: data.id, username: data.username, role: data.role }
+        const userData: User = { id: data.id, username: data.username, role: data.role, avatarUrl: data.avatarUrl, createdAt: data.createdAt }
         localStorage.setItem('user', JSON.stringify(userData))
         setUser(userData)
         return userData

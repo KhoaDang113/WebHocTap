@@ -35,7 +35,7 @@ public class CommentService {
         if (request.getCourseId() == null) {
             throw new AppException(ErrorCode.BAD_REQUEST, "Course ID is required");
         }
-        
+
         com.example.WebHocTap.entity.Course course = courseRepository.findById(request.getCourseId())
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Course not found"));
 
@@ -57,17 +57,18 @@ public class CommentService {
                 .parentId(request.getParentId())
                 .userRole(assignedRole)
                 .build();
-        
+
         Comment saved = commentRepository.save(comment);
         return mapToDTO(saved);
     }
 
     public List<CommentDTO> getInstructorComments(String instructorUsername) {
-        List<com.example.WebHocTap.entity.Course> instructorCourses = courseRepository.findByInstructor(instructorUsername);
+        List<com.example.WebHocTap.entity.Course> instructorCourses = courseRepository
+                .findByInstructor(instructorUsername);
         List<String> courseIds = instructorCourses.stream()
                 .map(com.example.WebHocTap.entity.Course::getId)
                 .collect(Collectors.toList());
-        
+
         return commentRepository.findByCourseIdIn(courseIds)
                 .stream()
                 .map(this::mapToDTO)
@@ -77,18 +78,18 @@ public class CommentService {
     public CommentDTO toggleHideComment(String username, String commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Comment not found"));
-        
+
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED, "User not found"));
-        
+
         com.example.WebHocTap.entity.Course course = courseRepository.findById(comment.getCourseId())
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Course not found"));
-        
+
         boolean isOwner = course.getInstructor().equals(username);
         if (user.getRole() != UserRole.ADMIN && !isOwner) {
             throw new AppException(ErrorCode.FORBIDDEN, "You don't have permission to manage this comment");
         }
-        
+
         comment.setHidden(!comment.isHidden());
         return mapToDTO(commentRepository.save(comment));
     }
@@ -96,18 +97,18 @@ public class CommentService {
     public CommentDTO togglePinComment(String username, String commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Comment not found"));
-        
+
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED, "User not found"));
-        
+
         com.example.WebHocTap.entity.Course course = courseRepository.findById(comment.getCourseId())
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Course not found"));
-        
+
         boolean isOwner = course.getInstructor().equals(username);
         if (user.getRole() != UserRole.ADMIN && !isOwner) {
             throw new AppException(ErrorCode.FORBIDDEN, "You don't have permission to pin this comment");
         }
-        
+
         comment.setPinned(!comment.isPinned());
         return mapToDTO(commentRepository.save(comment));
     }
@@ -129,7 +130,8 @@ public class CommentService {
         User currentUser = currentUsername != null ? userRepository.findByUsername(currentUsername).orElse(null) : null;
         String currentUserId = currentUser != null ? currentUser.getId() : null;
 
-        List<Comment> rootComments = commentRepository.findByCourseIdAndLessonIdIsNullAndParentIdIsNullOrderByCreatedAtDesc(courseId);
+        List<Comment> rootComments = commentRepository
+                .findByCourseIdAndLessonIdIsNullAndParentIdIsNullOrderByCreatedAtDesc(courseId);
         return rootComments.stream()
                 .filter(c -> !c.isHidden() || (currentUserId != null && c.getUserId().equals(currentUserId)))
                 .map(c -> mapToDTOWithReplies(c, currentUserId))
@@ -160,15 +162,17 @@ public class CommentService {
         } else {
             comment.getLikes().add(user.getId());
         }
-        
+
         return mapToDTO(commentRepository.save(comment));
     }
 
     private CommentDTO mapToDTO(Comment comment) {
         User user = userRepository.findById(comment.getUserId()).orElse(null);
-        com.example.WebHocTap.entity.Lesson lesson = comment.getLessonId() != null ? lessonRepository.findById(comment.getLessonId()).orElse(null) : null;
+        com.example.WebHocTap.entity.Lesson lesson = comment.getLessonId() != null
+                ? lessonRepository.findById(comment.getLessonId()).orElse(null)
+                : null;
         com.example.WebHocTap.entity.Course course = courseRepository.findById(comment.getCourseId()).orElse(null);
-        
+
         return CommentDTO.builder()
                 .id(comment.getId())
                 .userId(comment.getUserId())

@@ -10,6 +10,8 @@ export interface User {
   id: string;
   username: string;
   role: "ADMIN" | "TEACHER" | "STUDENT";
+  avatarUrl?: string;
+  createdAt?: string;
 }
 
 export interface AuthResponse {
@@ -18,6 +20,8 @@ export interface AuthResponse {
   refreshToken: string;
   username: string;
   role: "ADMIN" | "TEACHER" | "STUDENT";
+  avatarUrl?: string;
+  createdAt?: string;
 }
 
 export interface LoginRequest {
@@ -51,6 +55,7 @@ export interface UserDTO {
   bio?: string;
   role: "ADMIN" | "TEACHER" | "STUDENT";
   isLocked: boolean;
+  isDeleted: boolean;
   pendingTeacherRequest: boolean;
   createdAt: string;
   updatedAt: string;

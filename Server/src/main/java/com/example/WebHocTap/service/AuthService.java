@@ -119,7 +119,7 @@ public class AuthService {
             String accessToken = jwtUtil.generateToken(user.getUsername());
             String refreshToken = createRefreshToken(user.getUsername());
 
-            return new AuthResponse(user.getId(), accessToken, refreshToken, user.getUsername(), user.getRole());
+            return new AuthResponse(user.getId(), accessToken, refreshToken, user.getUsername(), user.getRole(), user.getAvatarUrl(), user.getCreatedAt());
 
         } catch (Exception e) {
             throw new AppException(ErrorCode.UNKNOWN_ERROR, "Lỗi khi tạo tài khoản");
@@ -164,8 +164,12 @@ public class AuthService {
     }
 
     public Map<String, String> requestLoginOtp(String email) {
-        userRepository.findByEmail(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Email chưa được đăng ký"));
+
+        if (user.isDeleted()) {
+            throw new AppException(ErrorCode.NOT_FOUND, "Email chưa được đăng ký");
+        }
 
         // Generate 6-digit OTP
         String otpCode = String.format("%06d", new Random().nextInt(999999));
@@ -202,6 +206,10 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "User không tồn tại"));
 
+        if (user.isDeleted()) {
+            throw new AppException(ErrorCode.NOT_FOUND, "User không tồn tại");
+        }
+
         // Kiểm tra tài khoản bị khóa
         if (user.isLocked()) {
             throw new AppException(ErrorCode.FORBIDDEN, "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ admin.");
@@ -213,7 +221,7 @@ public class AuthService {
         String accessToken = jwtUtil.generateToken(user.getUsername());
         String refreshToken = createRefreshToken(user.getUsername());
 
-        return new AuthResponse(user.getId(), accessToken, refreshToken, user.getUsername(), user.getRole());
+        return new AuthResponse(user.getId(), accessToken, refreshToken, user.getUsername(), user.getRole(), user.getAvatarUrl(), user.getCreatedAt());
     }
 
     // --- SHARED ---
@@ -236,7 +244,7 @@ public class AuthService {
         String newAccessToken = jwtUtil.generateToken(user.getUsername());
         String newRefreshToken = createRefreshToken(user.getUsername());
 
-        return new AuthResponse(user.getId(), newAccessToken, newRefreshToken, user.getUsername(), user.getRole());
+        return new AuthResponse(user.getId(), newAccessToken, newRefreshToken, user.getUsername(), user.getRole(), user.getAvatarUrl(), user.getCreatedAt());
     }
 
     public void logout(String refreshTokenStr) {
