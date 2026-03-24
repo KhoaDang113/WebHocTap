@@ -9,6 +9,7 @@ export interface ApiResponse<T = unknown> {
 export interface User {
   id: string;
   username: string;
+  fullName?: string;
   role: "ADMIN" | "TEACHER" | "STUDENT";
   avatarUrl?: string;
   createdAt?: string;
@@ -19,6 +20,7 @@ export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
   username: string;
+  fullName?: string;
   role: "ADMIN" | "TEACHER" | "STUDENT";
   avatarUrl?: string;
   createdAt?: string;

@@ -46,11 +46,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const token = localStorage.getItem('accessToken')
             if (!token || !user) return
             try {
-                const res = await axiosClient.get<ApiResponse<{ id: string; username: string; role: string; avatarUrl: string; createdAt: string }>>('/auth/me')
+                const res = await axiosClient.get<ApiResponse<{ id: string; username: string; fullName: string; role: string; avatarUrl: string; createdAt: string }>>('/auth/me')
                 const data = res.data.data
                 const updatedUser: User = {
                     id: data.id,
                     username: data.username,
+                    fullName: data.fullName,
                     role: data.role as User['role'],
                     avatarUrl: data.avatarUrl || undefined,
                     createdAt: data.createdAt,
@@ -68,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const saveAuth = (data: AuthResponse) => {
         localStorage.setItem('accessToken', data.accessToken)
         localStorage.setItem('refreshToken', data.refreshToken)
-        const userData: User = { id: data.id, username: data.username, role: data.role, avatarUrl: data.avatarUrl, createdAt: data.createdAt }
+        const userData: User = { id: data.id, username: data.username, fullName: data.fullName, role: data.role, avatarUrl: data.avatarUrl, createdAt: data.createdAt }
         localStorage.setItem('user', JSON.stringify(userData))
         setUser(userData)
         return userData
