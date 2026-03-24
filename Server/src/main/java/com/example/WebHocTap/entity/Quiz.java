@@ -25,6 +25,8 @@ public class Quiz {
 
     private Integer timeLimit;
 
+    private String status = "DRAFT"; // DRAFT, PUBLIC, PRIVATE
+
     @CreatedDate
     private LocalDateTime createdAt;
 

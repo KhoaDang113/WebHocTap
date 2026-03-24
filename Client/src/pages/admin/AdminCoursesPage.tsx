@@ -471,13 +471,14 @@ export default function AdminCoursesPage() {
       )}
 
       {isFormOpen && (
-        <div className="fixed inset-0 z-40 bg-black/30 flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg border border-slate-200">
-            <form onSubmit={handleSubmitForm} className="p-6 space-y-4">
-              <div>
-                <h2 className="text-xl font-semibold text-slate-800">{editingCourse ? "Chỉnh sửa khóa học" : "Thêm khóa học mới"}</h2>
-                <p className="text-sm text-slate-500 mt-1">Nhập thông tin khóa học và lưu để cập nhật hệ thống.</p>
-              </div>
+        <div className="fixed inset-0 z-50 bg-black/30 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg border border-slate-200 flex flex-col max-h-[90vh] my-auto">
+            <div className="p-6 border-b border-slate-100 shrink-0">
+              <h2 className="text-xl font-semibold text-slate-800">{editingCourse ? "Chỉnh sửa khóa học" : "Thêm khóa học mới"}</h2>
+              <p className="text-sm text-slate-500 mt-1">Nhập thông tin khóa học và lưu để cập nhật hệ thống.</p>
+            </div>
+            
+            <form onSubmit={handleSubmitForm} className="p-6 space-y-4 overflow-y-auto flex-1">
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label className="flex flex-col gap-1 text-sm text-slate-700">
@@ -634,7 +635,7 @@ export default function AdminCoursesPage() {
 
               {formError && <p className="text-sm text-red-600">{formError}</p>}
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 shrink-0 mt-4">
                 <button
                   type="button"
                   className="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50"

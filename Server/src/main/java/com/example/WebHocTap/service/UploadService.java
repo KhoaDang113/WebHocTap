@@ -25,14 +25,16 @@ public class UploadService {
         validateFile(file, ALLOWED_IMAGE_TYPES);
         
         try {
-            Map uploadResult = cloudinary.uploader().upload(file.getInputStream(),
+            Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
                     ObjectUtils.asMap(
                             "resource_type", "auto",
                             "folder", "webhoctap/courses"
                     ));
             return (String) uploadResult.get("secure_url");
-        } catch (IOException e) {
-            throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR, "Failed to upload image: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Cloudinary Upload Error (Image): " + e.getMessage());
+            e.printStackTrace();
+            throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR, "Failed to upload image: " + e.getMessage(), e);
         }
     }
 
@@ -40,14 +42,16 @@ public class UploadService {
         validateFile(file, ALLOWED_VIDEO_TYPES);
         
         try {
-            Map uploadResult = cloudinary.uploader().upload(file.getInputStream(),
+            Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
                     ObjectUtils.asMap(
                             "resource_type", "video",
                             "folder", "webhoctap/videos"
                     ));
             return (String) uploadResult.get("secure_url");
-        } catch (IOException e) {
-            throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR, "Failed to upload video: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Cloudinary Upload Error (Video): " + e.getMessage());
+            e.printStackTrace();
+            throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR, "Failed to upload video: " + e.getMessage(), e);
         }
     }
 
@@ -57,7 +61,7 @@ public class UploadService {
         }
 
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new AppException(ErrorCode.BAD_REQUEST, "File size exceeds 10MB limit");
+            throw new AppException(ErrorCode.BAD_REQUEST, "Dung lượng file vượt quá giới hạn cho phép (50MB)");
         }
 
         String contentType = file.getContentType();

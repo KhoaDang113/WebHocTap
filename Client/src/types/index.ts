@@ -122,6 +122,7 @@ export interface LessonPayload {
 export interface AnswerDTO {
   id: string;
   content: string;
+  isCorrect?: boolean;
 }
 
 export interface QuestionDTO {
