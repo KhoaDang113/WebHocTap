@@ -22,24 +22,35 @@ public class LessonProgressService {
     private final LessonRepository lessonRepository;
     private final com.example.WebHocTap.repository.EnrollmentRepository enrollmentRepository; // Add this line
     private final com.example.WebHocTap.repository.UserRepository userRepository; // Add this line
+    private final com.example.WebHocTap.repository.CourseRepository courseRepository;
 
-    private String getCurrentUserId() {
+    private com.example.WebHocTap.entity.User getCurrentUser() {
         org.springframework.security.core.Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new AppException(ErrorCode.UNAUTHORIZED, "Unauthorized");
         }
 
         String username = authentication.getName();
-        com.example.WebHocTap.entity.User user = userRepository.findByUsername(username)
+        return userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED, "User not found: " + username));
-        return user.getId();
+    }
+
+    private String getCurrentUserId() {
+        return getCurrentUser().getId();
     }
 
     public LessonProgress completeLesson(String courseId, String lessonId) {
-        String userId = getCurrentUserId();
+        com.example.WebHocTap.entity.User user = getCurrentUser();
+        String userId = user.getId();
 
-        // Check if enrolled
-        if (!enrollmentRepository.existsByUserIdAndCourseId(userId, courseId)) {
+        com.example.WebHocTap.entity.Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Course not found"));
+
+        boolean isInstructor = com.example.WebHocTap.common.UserRole.TEACHER.equals(user.getRole()) && user.getUsername().equals(course.getInstructor());
+        boolean isEnrolled = enrollmentRepository.existsByUserIdAndCourseId(userId, courseId);
+
+        // Check if enrolled or instructor
+        if (!isEnrolled && !isInstructor) {
             throw new AppException(ErrorCode.UNAUTHORIZED, "Not enrolled in this course");
         }
 

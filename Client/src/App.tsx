@@ -27,7 +27,6 @@ import {
   AdminUserManagementPage,
   AdminCoursesPage,
   AdminLivePage,
-  AdminSettingsPage,
   AdminCategoryPage,
   AdminLessonsPage,
   AdminCreateLessonPage,
@@ -66,7 +65,6 @@ function App() {
                 <Route path="lessons" element={<AdminLessonsPage />} />
                 <Route path="quizzes" element={<AdminQuizzesPage />} />
                 <Route path="live" element={<AdminLivePage />} />
-                <Route path="settings" element={<AdminSettingsPage />} />
               </Route>
 
               {/* Instructor routes - layout riêng */}
