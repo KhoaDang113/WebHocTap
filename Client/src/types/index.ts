@@ -190,6 +190,8 @@ export interface CommentDTO {
   lessonTitle?: string;
   courseTitle?: string;
   isHidden?: boolean;
+  isPinned?: boolean;
+  userRole?: string;
 }
 
 // Instructor Stats

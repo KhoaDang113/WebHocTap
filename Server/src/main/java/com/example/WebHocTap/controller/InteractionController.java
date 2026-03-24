@@ -54,7 +54,20 @@ public class InteractionController {
 
     @GetMapping("/reviews/course/{courseId}")
     public ResponseEntity<ApiResponse<List<ReviewDTO>>> getCourseReviews(@PathVariable String courseId) {
-        return ResponseEntity.ok(ApiResponse.ok(reviewService.getCourseReviews(courseId)));
+        String username = getCurrentUsername();
+        return ResponseEntity.ok(ApiResponse.ok(reviewService.getCourseReviews(courseId, username)));
+    }
+
+    @GetMapping("/reviews/instructor")
+    public ResponseEntity<ApiResponse<List<ReviewDTO>>> getInstructorReviews() {
+        String username = getCurrentUsername();
+        return ResponseEntity.ok(ApiResponse.ok(reviewService.getInstructorReviews(username)));
+    }
+
+    @PatchMapping("/reviews/{reviewId}/toggle-hide")
+    public ResponseEntity<ApiResponse<ReviewDTO>> toggleHideReview(@PathVariable String reviewId) {
+        String username = getCurrentUsername();
+        return ResponseEntity.ok(ApiResponse.ok(reviewService.toggleHideReview(username, reviewId)));
     }
 
     // COMMENTS
@@ -66,12 +79,37 @@ public class InteractionController {
 
     @GetMapping("/comments/lesson/{lessonId}")
     public ResponseEntity<ApiResponse<List<CommentDTO>>> getLessonComments(@PathVariable String lessonId) {
-        return ResponseEntity.ok(ApiResponse.ok(commentService.getCommentsByLesson(lessonId)));
+        String username = getCurrentUsername();
+        return ResponseEntity.ok(ApiResponse.ok(commentService.getCommentsByLesson(lessonId, username)));
+    }
+
+    @GetMapping("/comments/course/{courseId}")
+    public ResponseEntity<ApiResponse<List<CommentDTO>>> getCourseComments(@PathVariable String courseId) {
+        String username = getCurrentUsername();
+        return ResponseEntity.ok(ApiResponse.ok(commentService.getCommentsByCourse(courseId, username)));
     }
 
     @PostMapping("/comments/{commentId}/like")
     public ResponseEntity<ApiResponse<CommentDTO>> toggleLike(@PathVariable String commentId) {
         String username = getCurrentUsername();
         return ResponseEntity.ok(ApiResponse.ok(commentService.toggleLike(username, commentId)));
+    }
+
+    @GetMapping("/comments/instructor")
+    public ResponseEntity<ApiResponse<List<CommentDTO>>> getInstructorComments() {
+        String username = getCurrentUsername();
+        return ResponseEntity.ok(ApiResponse.ok(commentService.getInstructorComments(username)));
+    }
+
+    @PatchMapping("/comments/{commentId}/toggle-hide")
+    public ResponseEntity<ApiResponse<CommentDTO>> toggleHideComment(@PathVariable String commentId) {
+        String username = getCurrentUsername();
+        return ResponseEntity.ok(ApiResponse.ok(commentService.toggleHideComment(username, commentId)));
+    }
+
+    @PatchMapping("/comments/{commentId}/toggle-pin")
+    public ResponseEntity<ApiResponse<CommentDTO>> togglePinComment(@PathVariable String commentId) {
+        String username = getCurrentUsername();
+        return ResponseEntity.ok(ApiResponse.ok(commentService.togglePinComment(username, commentId)));
     }
 }

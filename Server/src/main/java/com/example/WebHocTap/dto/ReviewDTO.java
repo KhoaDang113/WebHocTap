@@ -1,5 +1,6 @@
 package com.example.WebHocTap.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,4 +21,8 @@ public class ReviewDTO {
     private LocalDateTime createdAt;
     private String userFullName;
     private String userAvatar;
+    private String courseTitle;
+    
+    @JsonProperty("isHidden")
+    private boolean hidden;
 }

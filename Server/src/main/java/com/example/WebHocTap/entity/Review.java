@@ -25,4 +25,7 @@ public class Review {
 
     @CreatedDate
     private LocalDateTime createdAt;
+    
+    @Builder.Default
+    private boolean hidden = false;
 }
