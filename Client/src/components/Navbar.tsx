@@ -137,9 +137,14 @@ const Navbar = () => {
                                     </Link>
                                     
                                     <Link 
-                                        to="/profile" 
+                                        to="/profile#my-courses" 
                                         className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                                        onClick={() => setIsDropdownOpen(false)}
+                                        onClick={() => {
+                                            setIsDropdownOpen(false);
+                                            if (location.pathname === '/profile') {
+                                                document.getElementById('learning-overview')?.scrollIntoView({ behavior: 'smooth' });
+                                            }
+                                        }}
                                     >
                                         <BookOpen size={16} />
                                         Khóa học của tôi
@@ -266,9 +271,14 @@ const Navbar = () => {
                                     Khóa học yêu thích
                                 </Link>
                                 <Link 
-                                    to="/profile" 
+                                    to="/profile#my-courses" 
                                     className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg"
-                                    onClick={() => setIsMenuOpen(false)}
+                                    onClick={() => {
+                                        setIsMenuOpen(false);
+                                        if (location.pathname === '/profile') {
+                                            document.getElementById('learning-overview')?.scrollIntoView({ behavior: 'smooth' });
+                                        }
+                                    }}
                                 >
                                     <BookOpen size={16} />
                                     Khóa học của tôi
