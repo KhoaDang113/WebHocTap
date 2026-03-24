@@ -44,8 +44,12 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/ws/**").permitAll()
 
-                        // Courses & Lessons & Quizzes: GET is accessible to all authenticated users
-                        .requestMatchers(HttpMethod.GET, "/api/v1/courses/**").authenticated()
+                        // Courses, Categories & Stats are public for viewing (GET)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/courses", "/api/v1/courses/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/categories", "/api/v1/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/stats/**").permitAll()
+
+                        // Lessons & Quizzes: GET requires authentication
                         .requestMatchers(HttpMethod.GET, "/api/v1/lessons/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/quizzes", "/api/v1/quizzes/**").authenticated()
 
