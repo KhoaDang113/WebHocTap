@@ -101,9 +101,13 @@ const Navbar = () => {
                                         {getRoleBadge(user.role)}
                                     </span>
                                 </div>
-                                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-sm">
-                                    {displayName.charAt(0).toUpperCase()}
-                                </div>
+                                {user.avatarUrl ? (
+                                    <img src={user.avatarUrl} alt="Avatar" className="w-9 h-9 rounded-full object-cover shadow-sm" referrerPolicy="no-referrer" />
+                                ) : (
+                                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-sm">
+                                        {displayName.charAt(0).toUpperCase()}
+                                    </div>
+                                )}
                                 <ChevronDown size={14} className={`text-slate-500 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                             </button>
 
@@ -247,9 +251,13 @@ const Navbar = () => {
                         {user ? (
                             <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                                 <div className="flex items-center gap-3 px-4 py-2 mb-2">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-sm">
-                                        {displayName.charAt(0).toUpperCase()}
-                                    </div>
+                                    {user.avatarUrl ? (
+                                        <img src={user.avatarUrl} alt="Avatar" className="w-10 h-10 rounded-full object-cover shadow-sm" referrerPolicy="no-referrer" />
+                                    ) : (
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-sm">
+                                            {displayName.charAt(0).toUpperCase()}
+                                        </div>
+                                    )}
                                     <div className="flex flex-col">
                                         <span className="text-sm font-semibold text-slate-800 dark:text-white leading-tight">{displayName}</span>
                                         <span className={`text-[10px] w-fit font-bold px-2 py-0.5 mt-1 rounded-md uppercase tracking-wider border ${getRoleBadgeColor(user.role)}`}>
