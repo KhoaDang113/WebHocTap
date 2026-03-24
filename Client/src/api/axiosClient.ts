@@ -43,10 +43,9 @@ axiosClient.interceptors.response.use(
           localStorage.removeItem('user')
           window.location.href = '/login'
         }
-      } else {
-        window.location.href = '/login'
       }
     }
+
 
     return Promise.reject(error)
   }

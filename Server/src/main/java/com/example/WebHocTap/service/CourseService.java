@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class CourseService {
 
     private final CourseRepository courseRepository;
+    private final com.example.WebHocTap.repository.ReviewRepository reviewRepository;
 
     public List<CourseDTO> getAllCourses() {
         return courseRepository.findAll().stream()
@@ -108,6 +109,13 @@ public class CourseService {
         dto.setUpdatedAt(course.getUpdatedAt());
         dto.setInviteCode(course.getInviteCode());
         dto.setPrivate(course.isPrivate());
+
+        // Aggregate review ratings
+        java.util.List<com.example.WebHocTap.entity.Review> reviews = reviewRepository.findByCourseId(course.getId());
+        double avg = reviews.stream().filter(r -> !r.isHidden()).mapToDouble(com.example.WebHocTap.entity.Review::getRating).average().orElse(0.0);
+        dto.setAverageRating(Math.round(avg * 10.0) / 10.0); // 1 decimal
+        dto.setReviewCount((int) reviews.stream().filter(r -> !r.isHidden()).count());
+
         return dto;
     }
 }

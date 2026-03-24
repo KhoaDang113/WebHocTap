@@ -81,6 +81,8 @@ export interface CourseDTO {
   inviteCode?: string;
   isPrivate?: boolean;
   progressPercent?: number; // Add this line
+  averageRating?: number;
+  reviewCount?: number;
 }
 
 export interface CourseProgressDTO {
