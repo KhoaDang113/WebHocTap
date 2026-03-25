@@ -1,4 +1,4 @@
-package com.example.WebHocTap.model;
+package com.example.WebHocTap.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,4 +16,3 @@ public class QuizSubmitRequest {
      */
     private Map<String, String> answers;
 }
-

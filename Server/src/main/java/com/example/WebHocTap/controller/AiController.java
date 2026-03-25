@@ -1,8 +1,8 @@
 package com.example.WebHocTap.controller;
 
 import com.example.WebHocTap.dto.ApiResponse;
-import com.example.WebHocTap.model.CreateQuestionRequest;
-import com.example.WebHocTap.model.AiQuizGenerateRequest;
+import com.example.WebHocTap.dto.request.CreateQuestionRequest;
+import com.example.WebHocTap.dto.request.AiQuizGenerateRequest;
 import com.example.WebHocTap.service.AiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -1,4 +1,4 @@
-package com.example.WebHocTap.model;
+package com.example.WebHocTap.dto.request;
 
 import com.example.WebHocTap.common.CourseStatus;
 import lombok.AllArgsConstructor;
@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateCourseStatusRequest {
+public class CourseModel {
+    private String title;
+    private String description;
+    private String teacherId;
     private CourseStatus status;
 }

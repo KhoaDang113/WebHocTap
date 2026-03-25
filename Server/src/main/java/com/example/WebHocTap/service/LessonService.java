@@ -4,7 +4,7 @@ import com.example.WebHocTap.common.ErrorCode;
 import com.example.WebHocTap.dto.LessonDTO;
 import com.example.WebHocTap.entity.Lesson;
 import com.example.WebHocTap.exception.AppException;
-import com.example.WebHocTap.model.LessonModel;
+import com.example.WebHocTap.dto.request.LessonModel;
 import com.example.WebHocTap.repository.LessonRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

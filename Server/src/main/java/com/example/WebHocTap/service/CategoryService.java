@@ -4,7 +4,7 @@ import com.example.WebHocTap.common.ErrorCode;
 import com.example.WebHocTap.dto.CategoryDTO;
 import com.example.WebHocTap.entity.Category;
 import com.example.WebHocTap.exception.AppException;
-import com.example.WebHocTap.model.CreateCategoryRequest;
+import com.example.WebHocTap.dto.request.CreateCategoryRequest;
 import com.example.WebHocTap.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
