@@ -2,11 +2,11 @@ package com.example.WebHocTap.controller;
 
 import com.example.WebHocTap.dto.ApiResponse;
 import com.example.WebHocTap.dto.QuizDTO;
-import com.example.WebHocTap.model.CreateQuizRequest;
-import com.example.WebHocTap.model.QuizResultResponse;
-import com.example.WebHocTap.model.QuizSubmitRequest;
-import com.example.WebHocTap.model.QuizTimerResponse;
-import com.example.WebHocTap.model.QuizAttemptHistoryResponse;
+import com.example.WebHocTap.dto.request.CreateQuizRequest;
+import com.example.WebHocTap.dto.request.QuizSubmitRequest;
+import com.example.WebHocTap.dto.response.QuizResultResponse;
+import com.example.WebHocTap.dto.response.QuizTimerResponse;
+import com.example.WebHocTap.dto.response.QuizAttemptHistoryResponse;
 import com.example.WebHocTap.service.QuizService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

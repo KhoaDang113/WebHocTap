@@ -2,8 +2,8 @@ package com.example.WebHocTap.controller;
 
 import com.example.WebHocTap.dto.ApiResponse;
 import com.example.WebHocTap.dto.CourseDTO;
-import com.example.WebHocTap.model.CreateCourseRequest;
-import com.example.WebHocTap.model.UpdateCourseStatusRequest;
+import com.example.WebHocTap.dto.request.CreateCourseRequest;
+import com.example.WebHocTap.dto.request.UpdateCourseStatusRequest;
 import com.example.WebHocTap.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

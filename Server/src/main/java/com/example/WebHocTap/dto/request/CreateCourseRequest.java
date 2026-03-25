@@ -1,4 +1,4 @@
-package com.example.WebHocTap.model;
+package com.example.WebHocTap.dto.request;
 
 import com.example.WebHocTap.common.CourseStatus;
 import lombok.AllArgsConstructor;
@@ -20,7 +20,7 @@ public class CreateCourseRequest {
     private String categoryId;
     private String instructor;
     private CourseStatus status;
-    
+
     @JsonProperty("isPrivate")
     private boolean isPrivate;
 }

@@ -1,4 +1,4 @@
-package com.example.WebHocTap.model;
+package com.example.WebHocTap.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RefreshTokenRequest {
-    private String refreshToken;
+public class LoginRequest {
+    private String username;
+    private String password;
 }

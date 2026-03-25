@@ -7,7 +7,7 @@ import com.example.WebHocTap.entity.Course;
 import com.example.WebHocTap.entity.LiveSession;
 import com.example.WebHocTap.entity.User;
 import com.example.WebHocTap.exception.AppException;
-import com.example.WebHocTap.model.CreateLiveSessionRequest;
+import com.example.WebHocTap.dto.request.CreateLiveSessionRequest;
 import com.example.WebHocTap.repository.CourseRepository;
 import com.example.WebHocTap.repository.EnrollmentRepository;
 import com.example.WebHocTap.repository.LiveSessionRepository;

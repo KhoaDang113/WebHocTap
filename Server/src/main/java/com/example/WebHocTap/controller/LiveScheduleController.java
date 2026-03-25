@@ -2,7 +2,7 @@ package com.example.WebHocTap.controller;
 
 import com.example.WebHocTap.dto.ApiResponse;
 import com.example.WebHocTap.dto.LiveScheduleDTO;
-import com.example.WebHocTap.model.CreateLiveScheduleRequest;
+import com.example.WebHocTap.dto.request.CreateLiveScheduleRequest;
 import com.example.WebHocTap.service.LiveScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

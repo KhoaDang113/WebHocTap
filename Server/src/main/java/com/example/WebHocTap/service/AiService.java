@@ -2,8 +2,8 @@ package com.example.WebHocTap.service;
 
 import com.example.WebHocTap.common.ErrorCode;
 import com.example.WebHocTap.exception.AppException;
-import com.example.WebHocTap.model.CreateQuestionRequest;
-import com.example.WebHocTap.model.AiQuizGenerateRequest;
+import com.example.WebHocTap.dto.request.CreateQuestionRequest;
+import com.example.WebHocTap.dto.request.AiQuizGenerateRequest;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;

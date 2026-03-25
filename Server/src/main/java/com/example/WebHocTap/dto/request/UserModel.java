@@ -1,4 +1,4 @@
-package com.example.WebHocTap.model;
+package com.example.WebHocTap.dto.request;
 
 import com.example.WebHocTap.common.UserRole;
 import lombok.AllArgsConstructor;

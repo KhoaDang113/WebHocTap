@@ -3,10 +3,10 @@ package com.example.WebHocTap.controller;
 import com.example.WebHocTap.dto.ApiResponse;
 import com.example.WebHocTap.dto.AuthResponse;
 import com.example.WebHocTap.entity.User;
-import com.example.WebHocTap.model.LoginRequest;
-import com.example.WebHocTap.model.RefreshTokenRequest;
-import com.example.WebHocTap.model.RegisterRequest;
-import com.example.WebHocTap.model.VerifyOtpRequest;
+import com.example.WebHocTap.dto.request.LoginRequest;
+import com.example.WebHocTap.dto.request.RefreshTokenRequest;
+import com.example.WebHocTap.dto.request.RegisterRequest;
+import com.example.WebHocTap.dto.request.VerifyOtpRequest;
 import com.example.WebHocTap.repository.UserRepository;
 import com.example.WebHocTap.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -58,7 +58,7 @@ public class AuthController {
     // OTP login
     @PostMapping("/login/request-otp")
     public ResponseEntity<ApiResponse<Map<String, String>>> requestLoginOtp(
-            @RequestBody com.example.WebHocTap.model.OtpRequest request) {      
+            @RequestBody com.example.WebHocTap.dto.request.OtpRequest request) {      
         return ResponseEntity.ok(ApiResponse.ok(authService.requestLoginOtp(request.getEmail())));
     }
 
