@@ -32,4 +32,7 @@ public class CourseDTO {
     private boolean isPrivate;
 
     private Double progressPercent; // Add this line
+
+    private Double averageRating;
+    private int reviewCount;
 }

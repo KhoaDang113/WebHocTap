@@ -2,7 +2,7 @@ package com.example.WebHocTap.controller;
 
 import com.example.WebHocTap.dto.ApiResponse;
 import com.example.WebHocTap.dto.UserDTO;
-import com.example.WebHocTap.model.UserModel;
+import com.example.WebHocTap.dto.request.UserModel;
 import com.example.WebHocTap.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

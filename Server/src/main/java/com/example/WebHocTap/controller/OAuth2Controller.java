@@ -2,8 +2,8 @@ package com.example.WebHocTap.controller;
 
 import com.example.WebHocTap.dto.ApiResponse;
 import com.example.WebHocTap.dto.AuthResponse;
-import com.example.WebHocTap.model.FacebookLoginRequest;
-import com.example.WebHocTap.model.GoogleLoginRequest;
+import com.example.WebHocTap.dto.request.FacebookLoginRequest;
+import com.example.WebHocTap.dto.request.GoogleLoginRequest;
 import com.example.WebHocTap.service.OAuth2Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

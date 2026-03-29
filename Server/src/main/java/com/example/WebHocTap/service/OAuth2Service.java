@@ -127,10 +127,14 @@ public class OAuth2Service {
         User user;
         if (existingUser.isPresent()) {
             user = existingUser.get();
-            // Cập nhật avatar từ Google mỗi lần đăng nhập
+            // Cập nhật avatar từ Google mỗi lần đăng nhập nếu chưa có avatar tùy chỉnh
             if (pictureUrl != null && !pictureUrl.isEmpty()) {
-                user.setAvatarUrl(pictureUrl);
-                userRepository.save(user);
+                String currentAvatar = user.getAvatarUrl();
+                boolean isDefaultOrGoogle = currentAvatar == null || currentAvatar.contains("googleusercontent.com") || currentAvatar.contains("ui-avatars.com");
+                if (isDefaultOrGoogle) {
+                    user.setAvatarUrl(pictureUrl);
+                    userRepository.save(user);
+                }
             }
         } else {
             // Create new user
@@ -154,7 +158,7 @@ public class OAuth2Service {
         String accessToken = jwtUtil.generateToken(user.getUsername());
         String refreshToken = createRefreshToken(user.getUsername());
 
-        return new AuthResponse(user.getId(), accessToken, refreshToken, user.getUsername(), user.getRole());
+        return new AuthResponse(user.getId(), accessToken, refreshToken, user.getUsername(), user.getFullName(), user.getRole(), user.getAvatarUrl(), user.getCreatedAt());
     }
 
     private String createRefreshToken(String username) {

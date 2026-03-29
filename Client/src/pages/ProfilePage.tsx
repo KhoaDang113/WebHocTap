@@ -1,19 +1,28 @@
 import { useState, useEffect, useRef } from "react";
-import { useAuth } from "@/hooks";
+import { useAuth, useMyAverageScore } from "@/hooks";
 import { Edit, Save, X, Camera, Mail, User as UserIcon, Calendar, MapPin, Phone, BookOpen, Clock, ShieldCheck, PlayCircle } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { getMyCourses } from "@/api/enrollmentApi";
+import { uploadImage } from "@/api/uploadApi";
+import axiosClient from "@/api/axiosClient";
 import type { CourseDTO } from "@/types";
 
 export function ProfilePage() {
   const { user } = useAuth();
+  const { data: averageScore = 0 } = useMyAverageScore();
   const location = useLocation();
   const coursesRef = useRef<HTMLDivElement>(null);
-  
+
   // Trạng thái cho chế độ chỉnh sửa
   const [isEditing, setIsEditing] = useState(false);
-  
-  // Dữ liệu mock cho profile
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Upload trạng thái
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewAvatar, setPreviewAvatar] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Dữ liệu cho profile
   const [profileData, setProfileData] = useState({
     name: user?.username?.split('@')[0] || "Nguyễn Văn An",
     email: user?.username || "an.nv@edu.vn",
@@ -23,8 +32,8 @@ export function ProfilePage() {
     dateOfBirth: "15/05/2003",
     phone: "0345678912",
     address: "Ký túc xá khu A, ĐHQG HCM",
-    avatar: "https://i.pravatar.cc/150?u=1",
-    joinDate: "05/09/2021",
+    avatar: user?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.username?.split('@')[0] || "User")}&background=random`,
+    joinDate: user?.createdAt ? new Date(user.createdAt).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }) : "05/09/2021",
     status: "Đang học"
   });
 
@@ -36,15 +45,53 @@ export function ProfilePage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = () => {
-    setProfileData(formData);
-    setIsEditing(false);
-    // TODO: Gọi API cập nhật thông tin user tại đây
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      setPreviewAvatar(URL.createObjectURL(file));
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      let newAvatarUrl = profileData.avatar;
+
+      if (selectedFile) {
+        newAvatarUrl = await uploadImage(selectedFile);
+      }
+
+      await axiosClient.put('/profile', {
+        fullName: formData.name,
+        avatarUrl: newAvatarUrl !== profileData.avatar && !newAvatarUrl.includes("ui-avatars") ? newAvatarUrl : undefined,
+      });
+
+      setProfileData({ ...formData, avatar: newAvatarUrl });
+      setIsEditing(false);
+      setSelectedFile(null);
+      setPreviewAvatar(null);
+
+      // Update localStorage so the reload uses the fresh avatar immediately
+      if (user) {
+        const updatedUser = { ...user, avatarUrl: newAvatarUrl };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+      }
+
+      window.location.reload(); // Refresh to update navbar
+    } catch (error) {
+      console.error(error);
+      alert("Có lỗi xảy ra khi cập nhật!");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
     setFormData(profileData);
     setIsEditing(false);
+    setSelectedFile(null);
+    setPreviewAvatar(null);
   };
 
   const [myCourses, setMyCourses] = useState<CourseDTO[]>([]);
@@ -76,7 +123,7 @@ export function ProfilePage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0f0f19] pt-24 pb-12 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
       <div className="max-w-4xl mx-auto space-y-8">
-        
+
         {/* Header Section */}
         <div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Hồ sơ cá nhân</h1>
@@ -85,7 +132,7 @@ export function ProfilePage() {
 
         {/* Profile Card */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-colors duration-200">
-          
+
           {/* Cover Photo */}
           <div className="h-32 sm:h-48 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 relative">
             <div className="absolute inset-0 bg-black/10"></div>
@@ -96,13 +143,23 @@ export function ProfilePage() {
             <div className="relative flex justify-between items-end -mt-16 sm:-mt-20 mb-6">
               <div className="relative group">
                 <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-4 border-white dark:border-slate-900 overflow-hidden bg-slate-100 shadow-md">
-                  <img 
-                    src={profileData.avatar} 
-                    alt="Avatar" 
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                  <img
+                    src={previewAvatar || profileData.avatar}
+                    alt="Avatar"
                     className="w-full h-full object-cover"
                   />
                   {isEditing && (
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                    <div
+                      className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
                       <Camera className="text-white w-8 h-8" />
                     </div>
                   )}
@@ -111,7 +168,7 @@ export function ProfilePage() {
               </div>
 
               {!isEditing ? (
-                <button 
+                <button
                   onClick={() => setIsEditing(true)}
                   className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 rounded-lg font-medium transition-colors border border-indigo-200 dark:border-indigo-500/20 shadow-sm"
                 >
@@ -120,19 +177,20 @@ export function ProfilePage() {
                 </button>
               ) : (
                 <div className="flex gap-2">
-                  <button 
+                  <button
                     onClick={handleCancel}
                     className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg font-medium transition-colors"
                   >
                     <X size={18} />
                     <span className="hidden sm:inline">Hủy</span>
                   </button>
-                  <button 
+                  <button
                     onClick={handleSave}
-                    className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 rounded-lg font-medium shadow-sm transition-colors"
+                    disabled={isSaving}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 rounded-lg font-medium shadow-sm transition-colors disabled:opacity-50"
                   >
                     <Save size={18} />
-                    <span className="hidden sm:inline">Lưu thay đổi</span>
+                    <span className="hidden sm:inline">{isSaving ? "Đang lưu..." : "Lưu thay đổi"}</span>
                   </button>
                 </div>
               )}
@@ -145,14 +203,7 @@ export function ProfilePage() {
                 <span className="bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 px-3 py-1 rounded-full font-semibold border border-indigo-200 dark:border-indigo-500/30">
                   {profileData.role}
                 </span>
-                <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                  <BookOpen size={16} />
-                  {profileData.faculty}
-                </span>
-                <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                  <ShieldCheck size={16} className="text-green-500" />
-                  MSSV: {profileData.studentId}
-                </span>
+
               </div>
             </div>
 
@@ -165,15 +216,15 @@ export function ProfilePage() {
                 <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-800 pb-2">
                   Thông tin cá nhân
                 </h3>
-                
+
                 <div className="space-y-4">
                   <div className="flex flex-col">
                     <label className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2 mb-1">
                       <UserIcon size={16} /> Họ và tên
                     </label>
                     {isEditing ? (
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="name"
                         value={formData.name}
                         onChange={handleInputChange}
@@ -184,39 +235,7 @@ export function ProfilePage() {
                     )}
                   </div>
 
-                  <div className="flex flex-col">
-                    <label className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2 mb-1">
-                      <Calendar size={16} /> Ngày sinh
-                    </label>
-                    {isEditing ? (
-                      <input 
-                        type="text" 
-                        name="dateOfBirth"
-                        value={formData.dateOfBirth}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-slate-900 dark:text-white transition-shadow"
-                      />
-                    ) : (
-                      <p className="font-medium text-slate-900 dark:text-white">{profileData.dateOfBirth}</p>
-                    )}
-                  </div>
 
-                  <div className="flex flex-col">
-                    <label className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2 mb-1">
-                      <MapPin size={16} /> Địa chỉ liên lạc
-                    </label>
-                    {isEditing ? (
-                      <input 
-                        type="text" 
-                        name="address"
-                        value={formData.address}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-slate-900 dark:text-white transition-shadow"
-                      />
-                    ) : (
-                      <p className="font-medium text-slate-900 dark:text-white">{profileData.address}</p>
-                    )}
-                  </div>
                 </div>
               </div>
 
@@ -225,7 +244,7 @@ export function ProfilePage() {
                 <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-800 pb-2">
                   Thông tin liên hệ
                 </h3>
-                
+
                 <div className="space-y-4">
                   <div className="flex flex-col">
                     <label className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2 mb-1">
@@ -237,22 +256,7 @@ export function ProfilePage() {
                     </p>
                   </div>
 
-                  <div className="flex flex-col">
-                    <label className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2 mb-1">
-                      <Phone size={16} /> Số điện thoại
-                    </label>
-                    {isEditing ? (
-                      <input 
-                        type="text" 
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-slate-900 dark:text-white transition-shadow"
-                      />
-                    ) : (
-                      <p className="font-medium text-slate-900 dark:text-white">{profileData.phone}</p>
-                    )}
-                  </div>
+
 
                   <div className="flex flex-col">
                     <label className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2 mb-1">
@@ -266,27 +270,27 @@ export function ProfilePage() {
 
           </div>
         </div>
-        
+
         {/* Course Progress / Activity Summary (Only for Students) */}
         {!isEditing && user?.role === 'STUDENT' && (
           <div className="space-y-6">
             <div ref={coursesRef} id="learning-overview" className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 sm:p-8 scroll-mt-24">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Tổng quan học tập</h3>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20">
                   <div className="text-blue-600 dark:text-blue-400 font-semibold mb-1">Khóa học đã đăng ký</div>
                   <div className="text-3xl font-bold text-slate-900 dark:text-white">{myCourses.length}</div>
                 </div>
-                
+
                 <div className="p-4 rounded-xl bg-green-50 dark:bg-green-500/10 border border-green-100 dark:border-green-100/20">
                   <div className="text-green-600 dark:text-green-400 font-semibold mb-1">Khóa học hoàn thành</div>
                   <div className="text-3xl font-bold text-slate-900 dark:text-white">0</div>
                 </div>
-                
+
                 <div className="p-4 rounded-xl bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20">
                   <div className="text-purple-600 dark:text-purple-400 font-semibold mb-1">Điểm trung bình</div>
-                  <div className="text-3xl font-bold text-slate-900 dark:text-white">0.0</div>
+                  <div className="text-3xl font-bold text-slate-900 dark:text-white">{averageScore.toFixed(1)}</div>
                 </div>
               </div>
             </div>
@@ -296,7 +300,7 @@ export function ProfilePage() {
                 <BookOpen className="text-indigo-600" />
                 Khóa học của tôi
               </h3>
-              
+
               {loadingCourses ? (
                 <div className="flex justify-center py-8">
                   <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
@@ -320,7 +324,7 @@ export function ProfilePage() {
                         <div className="p-5 flex-1 flex flex-col">
                           <h4 className="font-semibold text-slate-900 dark:text-white line-clamp-2 leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{course.title}</h4>
                           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 line-clamp-2">{course.description || "Danh mục khóa học"}</p>
-                          
+
                           {/* Learning Progress Bar */}
                           <div className="mt-4 space-y-1.5">
                             <div className="flex items-center justify-between text-xs">
@@ -328,8 +332,8 @@ export function ProfilePage() {
                               <span className="text-indigo-600 dark:text-indigo-400 font-bold">{Math.round(course.progressPercent || 0)}%</span>
                             </div>
                             <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                              <div 
-                                className="bg-indigo-600 dark:bg-indigo-500 h-full rounded-full transition-all duration-300" 
+                              <div
+                                className="bg-indigo-600 dark:bg-indigo-500 h-full rounded-full transition-all duration-300"
                                 style={{ width: `${course.progressPercent || 0}%` }}
                               ></div>
                             </div>

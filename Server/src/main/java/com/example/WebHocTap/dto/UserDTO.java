@@ -23,6 +23,9 @@ public class UserDTO {
     @JsonProperty("isLocked")
     private boolean isLocked;
 
+    @JsonProperty("isDeleted")
+    private boolean isDeleted;
+
     @JsonProperty("pendingTeacherRequest")
     private boolean pendingTeacherRequest;
 

@@ -2,7 +2,7 @@ package com.example.WebHocTap.controller;
 
 import com.example.WebHocTap.dto.ApiResponse;
 import com.example.WebHocTap.dto.CategoryDTO;
-import com.example.WebHocTap.model.CreateCategoryRequest;
+import com.example.WebHocTap.dto.request.CreateCategoryRequest;
 import com.example.WebHocTap.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

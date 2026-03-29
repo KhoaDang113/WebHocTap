@@ -26,6 +26,7 @@ export {
 } from "./useCourses";
 export {
   useAllLessons,
+  useLesson,
   useLessons,
   useCreateLesson,
   useUpdateLesson,
@@ -57,3 +58,4 @@ export {
   useToggleHideComment,
 } from "./useInteractions";
 export { useStompSubscription } from "./useStompSubscription";
+export { useCourseQuizzes, useMyAverageScore } from "./useQuizzes";

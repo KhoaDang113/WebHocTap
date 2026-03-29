@@ -35,7 +35,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, authException) -> {
-                            response.sendError(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                            response.sendError(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED,
+                                    "Unauthorized");
                         }))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
@@ -44,8 +45,12 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/ws/**").permitAll()
 
-                        // Courses & Lessons & Quizzes: GET is accessible to all authenticated users
-                        .requestMatchers(HttpMethod.GET, "/api/v1/courses/**").authenticated()
+                        // Courses, Categories & Stats are public for viewing (GET)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/courses", "/api/v1/courses/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/categories", "/api/v1/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/stats/**").permitAll()
+
+                        // Lessons & Quizzes: GET requires authentication
                         .requestMatchers(HttpMethod.GET, "/api/v1/lessons/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/quizzes", "/api/v1/quizzes/**").authenticated()
 
@@ -57,6 +62,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/lessons/**").hasAnyRole("ADMIN", "TEACHER")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/lessons/**").hasAnyRole("ADMIN", "TEACHER")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/lessons/**").hasAnyRole("ADMIN", "TEACHER")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/quizzes/*/start").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/quizzes/*/submit").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/v1/quizzes/**").hasAnyRole("ADMIN", "TEACHER")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/quizzes/**").hasAnyRole("ADMIN", "TEACHER")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/quizzes/**").hasAnyRole("ADMIN", "TEACHER")

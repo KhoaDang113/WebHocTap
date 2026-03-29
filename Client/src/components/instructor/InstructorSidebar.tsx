@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom"
-import { LayoutDashboard, BookOpen, LogOut, ChevronLeft, ChevronRight, Video, MessageCircle, GraduationCap } from "lucide-react"
+import { LayoutDashboard, BookOpen, LogOut, ChevronLeft, ChevronRight, Video, MessageCircle, GraduationCap, Library, HelpCircle, History as HistoryIcon } from "lucide-react"
 import { useState } from "react"
 import { useAuth } from "@/hooks"
 
@@ -11,8 +11,11 @@ export function InstructorSidebar() {
   const links = [
     { to: "/instructor/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
     { to: "/instructor/courses", icon: <BookOpen size={20} />, label: "Khóa học" },
+    { to: "/instructor/lessons", icon: <Library size={20} />, label: "Bài học" },
     { to: "/instructor/interactions", icon: <MessageCircle size={20} />, label: "Đánh giá & Bình luận" },
     { to: "/instructor/live", icon: <Video size={20} />, label: "Lớp học Live" },
+    { to: "/instructor/quizzes", icon: <HelpCircle size={20} />, label: "Quiz / Câu hỏi" },
+    { to: "/instructor/quizzes/attempts", icon: <HistoryIcon size={20} />, label: "Lịch sử thi" },
   ]
 
   const isActive = (path: string) => {

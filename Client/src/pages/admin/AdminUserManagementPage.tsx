@@ -325,7 +325,8 @@ export default function AdminUserManagementPage() {
     role: getRoleLabel(u.role),
     rawRole: u.role,
     isLocked: u.isLocked,
-    status: u.isLocked ? "Bị khóa" : "Hoạt động",
+    isDeleted: !!u.isDeleted,
+    status: u.isDeleted ? "Đã xóa" : (u.isLocked ? "Bị khóa" : "Hoạt động"),
     originalUser: u,
   }));
 
@@ -519,6 +520,7 @@ export default function AdminUserManagementPage() {
               <option value="all">Tất cả Trạng thái</option>
               <option value="Hoạt động">Hoạt động</option>
               <option value="Bị khóa">Bị khóa</option>
+              <option value="Đã xóa">Đã xóa</option>
             </select>
           </div>
         </div>
@@ -528,9 +530,9 @@ export default function AdminUserManagementPage() {
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr className="bg-slate-50 text-slate-600 text-sm border-b border-slate-200">
-                <th className="py-4 px-6 font-semibold w-12">
+                {/* <th className="py-4 px-6 font-semibold w-12">
                   <input type="checkbox" className="rounded border-slate-300" />
-                </th>
+                </th> */}
                 <th className="py-4 px-6 font-semibold">Người dùng</th>
                 <th className="py-4 px-6 font-semibold">Vai trò</th>
                 <th className="py-4 px-6 font-semibold">Trạng thái</th>
@@ -541,9 +543,9 @@ export default function AdminUserManagementPage() {
               {pagedUsers.length > 0 ? (
                 pagedUsers.map((u) => (
                   <tr key={u.id} className="hover:bg-slate-50/80 transition-colors group">
-                    <td className="py-3 px-6">
+                    {/* <td className="py-3 px-6">
                       <input type="checkbox" className="rounded border-slate-300" />
-                    </td>
+                    </td> */}
                     <td className="py-3 px-6">
                       <div className="flex items-center gap-3">
                         <UserAvatar src={u.avatar} name={u.name} size={40} />
@@ -555,55 +557,59 @@ export default function AdminUserManagementPage() {
                     </td>
                     <td className="py-3 px-6">
                       <span
-                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                          u.role === "Giảng viên"
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-slate-100 text-slate-700"
-                        }`}
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${u.role === "Giảng viên"
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-slate-100 text-slate-700"
+                          }`}
                       >
                         {u.role}
                       </span>
                     </td>
                     <td className="py-3 px-6">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                          u.status === "Hoạt động"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${u.status === "Hoạt động"
+                          ? "bg-green-100 text-green-700"
+                          : u.status === "Bị khóa"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-slate-200 text-slate-700"
+                          }`}
                       >
                         {u.status === "Hoạt động" && <CheckCircle size={12} />}
                         {u.status === "Bị khóa" && <XCircle size={12} />}
+                        {u.status === "Đã xóa" && <Trash2 size={12} />}
                         {u.status}
                       </span>
                     </td>
                     <td className="py-3 px-6">
                       <div className="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => handleOpenEdit(u.originalUser)}
-                          className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded"
-                          title="Chỉnh sửa"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleOpenLockToggle(u.originalUser)}
-                          className={`p-1.5 rounded ${
-                            u.isLocked
-                              ? "text-green-500 hover:text-green-700 hover:bg-green-50"
-                              : "text-slate-400 hover:text-orange-600 hover:bg-orange-50"
-                          }`}
-                          title={u.isLocked ? "Mở khóa tài khoản" : "Khóa tài khoản"}
-                        >
-                          {u.isLocked ? <Unlock size={16} /> : <Lock size={16} />}
-                        </button>
-                        <button
-                          onClick={() => handleOpenDelete(u.originalUser)}
-                          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded"
-                          title="Xóa"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        {!u.isDeleted && (
+                          <>
+                            <button
+                              onClick={() => handleOpenEdit(u.originalUser)}
+                              className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded"
+                              title="Chỉnh sửa"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleOpenLockToggle(u.originalUser)}
+                              className={`p-1.5 rounded ${u.isLocked
+                                ? "text-green-500 hover:text-green-700 hover:bg-green-50"
+                                : "text-slate-400 hover:text-orange-600 hover:bg-orange-50"
+                                }`}
+                              title={u.isLocked ? "Mở khóa tài khoản" : "Khóa tài khoản"}
+                            >
+                              {u.isLocked ? <Unlock size={16} /> : <Lock size={16} />}
+                            </button>
+                            {/* <button
+                              onClick={() => handleOpenDelete(u.originalUser)}
+                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded"
+                              title="Xóa"
+                            >
+                              <Trash2 size={16} />
+                            </button> */}
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -643,11 +649,10 @@ export default function AdminUserManagementPage() {
                 <button
                   key={page}
                   onClick={() => setCurrentPage(page as number)}
-                  className={`w-8 h-8 rounded font-medium text-sm flex items-center justify-center ${
-                    safePage === page
-                      ? "bg-blue-600 text-white"
-                      : "border border-slate-300 text-slate-600 hover:bg-slate-50"
-                  }`}
+                  className={`w-8 h-8 rounded font-medium text-sm flex items-center justify-center ${safePage === page
+                    ? "bg-blue-600 text-white"
+                    : "border border-slate-300 text-slate-600 hover:bg-slate-50"
+                    }`}
                 >
                   {page}
                 </button>

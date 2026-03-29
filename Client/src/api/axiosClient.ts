@@ -2,9 +2,6 @@ import axios from 'axios'
 
 const axiosClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api/v1',
-  headers: {
-    'Content-Type': 'application/json',
-  },
 })
 
 // Request interceptor — attach access token
@@ -46,10 +43,9 @@ axiosClient.interceptors.response.use(
           localStorage.removeItem('user')
           window.location.href = '/login'
         }
-      } else {
-        window.location.href = '/login'
       }
     }
+
 
     return Promise.reject(error)
   }

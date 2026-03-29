@@ -2,8 +2,8 @@ package com.example.WebHocTap.controller;
 
 import com.example.WebHocTap.dto.ApiResponse;
 import com.example.WebHocTap.dto.UserDTO;
-import com.example.WebHocTap.model.ChangePasswordRequest;
-import com.example.WebHocTap.model.UpdateProfileRequest;
+import com.example.WebHocTap.dto.request.ChangePasswordRequest;
+import com.example.WebHocTap.dto.request.UpdateProfileRequest;
 import com.example.WebHocTap.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

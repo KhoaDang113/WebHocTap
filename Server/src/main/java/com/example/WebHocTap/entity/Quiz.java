@@ -24,6 +24,10 @@ public class Quiz {
     private String title;
 
     private Integer timeLimit;
+    
+    private Integer maxAttempts = 1;
+
+    private String status = "DRAFT"; // DRAFT, PUBLIC, PRIVATE
 
     @CreatedDate
     private LocalDateTime createdAt;

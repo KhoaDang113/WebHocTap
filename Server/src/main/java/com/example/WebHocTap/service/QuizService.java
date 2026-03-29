@@ -9,17 +9,21 @@ import com.example.WebHocTap.entity.Question;
 import com.example.WebHocTap.entity.Quiz;
 import com.example.WebHocTap.entity.QuizAttempt;
 import com.example.WebHocTap.exception.AppException;
-import com.example.WebHocTap.model.QuizResultResponse;
-import com.example.WebHocTap.model.QuizSubmitRequest;
-import com.example.WebHocTap.model.QuizTimerResponse;
-import com.example.WebHocTap.model.CreateAnswerRequest;
-import com.example.WebHocTap.model.CreateQuestionRequest;
-import com.example.WebHocTap.model.CreateQuizRequest;
+import com.example.WebHocTap.dto.response.QuizResultResponse;
+import com.example.WebHocTap.dto.request.QuizSubmitRequest;
+import com.example.WebHocTap.dto.response.QuizTimerResponse;
+import com.example.WebHocTap.dto.request.CreateAnswerRequest;
+import com.example.WebHocTap.dto.request.CreateQuestionRequest;
+import com.example.WebHocTap.dto.request.CreateQuizRequest;
 import com.example.WebHocTap.repository.AnswerRepository;
+import com.example.WebHocTap.repository.CourseRepository;
 import com.example.WebHocTap.repository.QuestionRepository;
 import com.example.WebHocTap.repository.QuizAttemptRepository;
 import com.example.WebHocTap.repository.QuizRepository;
-import com.example.WebHocTap.service.EnrollmentService;
+import com.example.WebHocTap.repository.UserRepository;
+import com.example.WebHocTap.dto.response.QuizAttemptHistoryResponse;
+import com.example.WebHocTap.entity.Course;
+import com.example.WebHocTap.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -36,12 +40,16 @@ public class QuizService {
     private final AnswerRepository answerRepository;
     private final QuizAttemptRepository quizAttemptRepository;
     private final EnrollmentService enrollmentService;
+    private final UserRepository userRepository;
+    private final CourseRepository courseRepository;
 
     public QuizDTO createQuiz(CreateQuizRequest request) {
         Quiz quiz = new Quiz();
         quiz.setCourseId(request.getCourseId());
         quiz.setTitle(request.getTitle());
-        quiz.setTimeLimit(request.getTimeLimit());
+        quiz.setTimeLimit(request.getTimeLimit() != null && request.getTimeLimit() > 0 ? request.getTimeLimit() : 600);
+        quiz.setMaxAttempts(request.getMaxAttempts() != null && request.getMaxAttempts() > 0 ? request.getMaxAttempts() : 1);
+        quiz.setStatus(request.getStatus() != null ? request.getStatus() : "DRAFT");
         
         Quiz savedQuiz = quizRepository.save(quiz);
 
@@ -79,7 +87,9 @@ public class QuizService {
         
         quiz.setCourseId(request.getCourseId());
         quiz.setTitle(request.getTitle());
-        quiz.setTimeLimit(request.getTimeLimit());
+        quiz.setTimeLimit(request.getTimeLimit() != null && request.getTimeLimit() > 0 ? request.getTimeLimit() : 600);
+        quiz.setMaxAttempts(request.getMaxAttempts() != null && request.getMaxAttempts() > 0 ? request.getMaxAttempts() : 1);
+        quiz.setStatus(request.getStatus() != null ? request.getStatus() : "DRAFT");
         
         Quiz updatedQuiz = quizRepository.save(quiz);
 
@@ -128,13 +138,28 @@ public class QuizService {
             throw new AppException(ErrorCode.UNAUTHORIZED, "User is not enrolled in this course");
         }
 
-        // Nếu đã có attempt -> không tạo mới, chỉ tính lại remainingTime
+        // Kiểm tra xem có lần làm bài nào đang dang dở (chưa nộp) không
         String userId = enrollmentService.getCurrentUserId();
-        QuizAttempt attempt = quizAttemptRepository.findByQuizIdAndUserId(quizId, userId).orElse(null);
+        QuizAttempt attempt = quizAttemptRepository.findByQuizIdAndUserIdAndSubmittedFalse(quizId, userId).orElse(null);
+
+        List<QuizAttempt> allAttempts = quizAttemptRepository.findAllByQuizIdAndUserId(quizId, userId);
+        int submittedCount = (int) allAttempts.stream().filter(QuizAttempt::isSubmitted).count();
+        int maxAttempts = quiz.getMaxAttempts() != null ? quiz.getMaxAttempts() : 1;
 
         LocalDateTime now = LocalDateTime.now();
 
         if (attempt == null) {
+            // Nếu không có bài đang làm, kiểm tra giới hạn số lần làm bài
+            if (submittedCount >= maxAttempts) {
+                // Đã hết lượt làm bài, trả về thông tin bài thi cuối cùng kèm status lỗi
+                QuizAttempt lastAttempt = allAttempts.isEmpty() ? null : allAttempts.get(allAttempts.size()-1);
+                return new QuizTimerResponse(0L, true, "MAX_ATTEMPTS_REACHED", 
+                    lastAttempt != null ? lastAttempt.getScore() : 0.0,
+                    lastAttempt != null ? lastAttempt.getCorrectAnswers() : 0,
+                    lastAttempt != null ? lastAttempt.getTotalQuestions() : 0,
+                    maxAttempts, submittedCount);
+            }
+
             LocalDateTime endTime = now.plusSeconds(quiz.getTimeLimit() != null ? quiz.getTimeLimit() : 0);
 
             attempt = new QuizAttempt();
@@ -152,7 +177,14 @@ public class QuizService {
             remaining = 0;
         }
 
-        return new QuizTimerResponse(remaining);
+        String status = "IN_PROGRESS";
+        if (remaining <= 0) {
+            status = "EXPIRED";
+            remaining = 0;
+        }
+
+        return new QuizTimerResponse(remaining, false, status, attempt.getScore(),
+            attempt.getCorrectAnswers(), attempt.getTotalQuestions(), maxAttempts, submittedCount);
     }
 
     /**
@@ -168,8 +200,25 @@ public class QuizService {
         }
 
         String userId = enrollmentService.getCurrentUserId();
-        QuizAttempt attempt = quizAttemptRepository.findByQuizIdAndUserId(quizId, userId)
-                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Quiz attempt not found"));
+        
+        // Ưu tiên tìm attempt chưa nộp
+        QuizAttempt attempt = quizAttemptRepository.findByQuizIdAndUserIdAndSubmittedFalse(quizId, userId).orElse(null);
+        
+        List<QuizAttempt> allAttempts = quizAttemptRepository.findAllByQuizIdAndUserId(quizId, userId);
+        int submittedCount = (int) allAttempts.stream().filter(QuizAttempt::isSubmitted).count();
+        int maxAttempts = quiz.getMaxAttempts() != null ? quiz.getMaxAttempts() : 1;
+
+        if (attempt == null) {
+            // Nếu không có bài đang làm, trả về thông tin của lượt làm bài cuối cùng
+            QuizAttempt lastAttempt = allAttempts.isEmpty() ? null : allAttempts.get(allAttempts.size()-1);
+            String status = (submittedCount >= maxAttempts) ? "MAX_ATTEMPTS_REACHED" : "NOT_STARTED";
+            
+            return new QuizTimerResponse(0L, lastAttempt != null && lastAttempt.isSubmitted(), status,
+                lastAttempt != null ? lastAttempt.getScore() : 0.0,
+                lastAttempt != null ? lastAttempt.getCorrectAnswers() : 0,
+                lastAttempt != null ? lastAttempt.getTotalQuestions() : 0,
+                maxAttempts, submittedCount);
+        }
 
         LocalDateTime now = LocalDateTime.now();
         long remaining = java.time.Duration.between(now, attempt.getEndTime()).getSeconds();
@@ -177,7 +226,14 @@ public class QuizService {
             remaining = 0;
         }
 
-        return new QuizTimerResponse(remaining);
+        String status = "IN_PROGRESS";
+        if (remaining <= 0) {
+            status = "EXPIRED";
+            remaining = 0;
+        }
+
+        return new QuizTimerResponse(remaining, false, status, attempt.getScore(),
+            attempt.getCorrectAnswers(), attempt.getTotalQuestions(), maxAttempts, submittedCount);
     }
 
     /**
@@ -193,18 +249,18 @@ public class QuizService {
         }
 
         String userId = enrollmentService.getCurrentUserId();
-        QuizAttempt attempt = quizAttemptRepository.findByQuizIdAndUserId(quizId, userId)
-                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Quiz attempt not found"));
+        QuizAttempt attempt = quizAttemptRepository.findByQuizIdAndUserIdAndSubmittedFalse(quizId, userId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "No active quiz attempt found"));
 
         // ❗ đã submit chưa
-        if (Boolean.TRUE.equals(attempt.getSubmitted())) {
+        if (attempt.isSubmitted()) {
             throw new AppException(ErrorCode.DUPLICATE, "Quiz already submitted");
         }
 
-        // ❗ hết giờ chưa
+        // Cho phép nộp bài kể cả khi vừa hết giờ (auto-submit)
         LocalDateTime now = LocalDateTime.now();
-        if (now.isAfter(attempt.getEndTime())) {
-            throw new AppException(ErrorCode.BAD_REQUEST, "Time expired");
+        if (attempt.getEndTime() == null || now.isAfter(attempt.getEndTime())) {
+            // Có thể log lại việc nộp trễ nếu cần
         }
 
         // Tính điểm: với mỗi question lấy answer đúng, so với answerId mà user gửi
@@ -212,24 +268,7 @@ public class QuizService {
         int total = questions.size();
         int correct = 0;
 
-        if (request != null && request.getAnswers() != null) {
-            for (Question question : questions) {
-                String selectedAnswerId = request.getAnswers().get(question.getId());
-                if (selectedAnswerId == null) {
-                    continue;
-                }
-                // tìm answer đúng cho câu hỏi
-                List<Answer> answers = answerRepository.findByQuestionId(question.getId());
-                answers.stream()
-                        .filter(a -> Boolean.TRUE.equals(a.getIsCorrect()))
-                        .findFirst()
-                        .ifPresent(correctAnswer -> {
-                            if (correctAnswer.getId().equals(selectedAnswerId)) {
-                                // tăng biến correct bên ngoài (dùng array 1 phần tử)
-                            }
-                        });
-            }
-        }
+        // ❗ Đã xóa đoạn lặp trùng lặp ở đây. Chuyển thẳng xuống tính điểm an toàn phía dưới.
 
         // cách an toàn: tính trong vòng lặp với biến tạm
         correct = 0;
@@ -251,9 +290,28 @@ public class QuizService {
         }
 
         attempt.setSubmitted(true);
+        attempt.setCorrectAnswers(correct);
+        attempt.setTotalQuestions(total);
+        double score = (total > 0) ? ((double) correct / total) * 10.0 : 0.0;
+        attempt.setScore(score);
         quizAttemptRepository.save(attempt);
 
-        return new QuizResultResponse(correct, total);
+        boolean passed = (score >= 5.0); // logic for passed (thang điểm 10)
+
+        return new QuizResultResponse(score, passed, correct, total);
+    }
+
+    public Double getMyAverageScore() {
+        String userId = enrollmentService.getCurrentUserId();
+        List<QuizAttempt> attempts = quizAttemptRepository.findByUserIdAndSubmittedTrue(userId);
+        if (attempts.isEmpty()) {
+            return 0.0;
+        }
+        double totalScore = 0.0;
+        for (QuizAttempt attempt : attempts) {
+            totalScore += attempt.getScore() != null ? attempt.getScore() : 0.0;
+        }
+        return totalScore / attempts.size();
     }
 
     private void createQuestion(String quizId, CreateQuestionRequest request) {
@@ -285,6 +343,8 @@ public class QuizService {
         dto.setCourseId(quiz.getCourseId());
         dto.setTitle(quiz.getTitle());
         dto.setTimeLimit(quiz.getTimeLimit());
+        dto.setMaxAttempts(quiz.getMaxAttempts());
+        dto.setStatus(quiz.getStatus());
         dto.setCreatedAt(quiz.getCreatedAt());
         dto.setUpdatedAt(quiz.getUpdatedAt());
 
@@ -310,6 +370,43 @@ public class QuizService {
                 .collect(Collectors.toList()));
 
         return dto;
+    }
+
+    /**
+     * Lấy toàn bộ lịch sử làm bài (dành cho Admin)
+     */
+    public List<QuizAttemptHistoryResponse> getAllAttemptsForAdmin() {
+        return quizAttemptRepository.findAll().stream()
+                .map(attempt -> {
+                    Quiz quiz = quizRepository.findById(attempt.getQuizId()).orElse(null);
+                    User user = userRepository.findById(attempt.getUserId()).orElse(null);
+                    Course course = quiz != null ? courseRepository.findById(quiz.getCourseId()).orElse(null) : null;
+
+                    return QuizAttemptHistoryResponse.builder()
+                            .id(attempt.getId())
+                            .userId(attempt.getUserId())
+                            .fullName(user != null ? user.getFullName() : "Unknown")
+                            .username(user != null ? user.getUsername() : "Unknown")
+                            .quizId(attempt.getQuizId())
+                            .quizTitle(quiz != null ? quiz.getTitle() : "Xoá/Không tồn tại")
+                            .courseTitle(course != null ? course.getTitle() : "Xoá/Không tồn tại")
+                            .startTime(attempt.getStartTime())
+                            .endTime(attempt.getEndTime())
+                            .submitted(attempt.isSubmitted())
+                            .correctAnswers(attempt.getCorrectAnswers())
+                            .totalQuestions(attempt.getTotalQuestions())
+                            .score(attempt.getScore())
+                            .build();
+                })
+                .sorted((a, b) -> b.getStartTime().compareTo(a.getStartTime())) // Mới nhất trên đầu
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Xóa 1 lần làm bài
+     */
+    public void deleteAttempt(String id) {
+        quizAttemptRepository.deleteById(id);
     }
 
     private AnswerDTO toAnswerDTO(Answer answer) {

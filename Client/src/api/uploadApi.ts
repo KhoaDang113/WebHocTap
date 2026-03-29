@@ -5,11 +5,7 @@ export const uploadImage = async (file: File): Promise<string> => {
   const formData = new FormData()
   formData.append('file', file)
 
-  const response = await axiosClient.post<ApiResponse<string>>('/upload/image', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  })
+  const response = await axiosClient.post<ApiResponse<string>>('/upload/image', formData)
   return response.data.data
 }
 
@@ -17,10 +13,6 @@ export const uploadVideo = async (file: File): Promise<string> => {
   const formData = new FormData()
   formData.append('file', file)
 
-  const response = await axiosClient.post<ApiResponse<string>>('/upload/video', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  })
+  const response = await axiosClient.post<ApiResponse<string>>('/upload/video', formData)
   return response.data.data
 }

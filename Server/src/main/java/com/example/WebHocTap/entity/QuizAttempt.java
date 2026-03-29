@@ -27,7 +27,13 @@ public class QuizAttempt {
 
     private LocalDateTime endTime;
 
-    private Boolean submitted = false;
+    private boolean submitted = false;
+
+    private Integer correctAnswers;
+
+    private Integer totalQuestions;
+
+    private Double score;
 
     @CreatedDate
     private LocalDateTime createdAt;

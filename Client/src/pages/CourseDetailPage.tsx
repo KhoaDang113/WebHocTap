@@ -1,4 +1,5 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import {
   ChevronRight,
   Clock,
@@ -10,6 +11,8 @@ import {
   CreditCard,
   ShieldCheck,
   Video,
+  X,
+  HelpCircle,
 } from "lucide-react";
 import {
   useCourse,
@@ -20,6 +23,7 @@ import {
   useAuth,
   useCourseLiveSessions,
   useStompSubscription,
+  useCourseQuizzes,
 } from "@/hooks";
 import type { LiveSessionDTO } from "@/types";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +47,15 @@ export default function CourseDetailPage() {
     isLoading: isCourseLoading,
     isError: isCourseError,
   } = useCourse(id || "");
+
+  const {
+    data: quizzes = [],
+    isLoading: isQuizzesLoading
+  } = useCourseQuizzes(id || "");
+
+  const publicQuizzes = quizzes.filter(q => q.status === "PUBLIC");
+
+  const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
 
   const { data: lessons = [], isLoading: isLessonsLoading } = useLessons(
     id || "",
@@ -70,11 +83,20 @@ export default function CourseDetailPage() {
     (s: LiveSessionDTO) => s.status === "ACTIVE",
   );
 
-  const handlePrimaryAction = async () => {
+  const handlePrimaryAction = async (quizId?: string) => {
     if (!id) return;
 
     if (!user) {
       navigate("/login");
+      return;
+    }
+
+    if (quizId) {
+      // Mở ngay trang Quiz
+      navigate(`/quiz/${id}/${quizId}`);
+      if (isQuizModalOpen) {
+        setIsQuizModalOpen(false);
+      }
       return;
     }
 
@@ -300,7 +322,7 @@ export default function CourseDetailPage() {
                         <div
                           key={lesson.id}
                           className="group flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:border-indigo-200 hover:shadow-md transition-all duration-300 cursor-pointer"
-                          onClick={handlePrimaryAction}
+                          onClick={() => handlePrimaryAction()}
                         >
                           <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center font-bold text-slate-400 bg-slate-50 rounded-xl group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-colors">
                             {String(index + 1).padStart(2, "0")}
@@ -392,7 +414,7 @@ export default function CourseDetailPage() {
                     <Button
                       className="w-full bg-indigo-600 hover:bg-indigo-700 h-12 text-lg font-bold shadow-lg shadow-indigo-100 transition-all active:scale-[0.98]"
                       disabled={isEnrollmentLoading || isEnrollLoading || (isRestrictedTeacher && !isEnrolledOrOwner)}
-                      onClick={handlePrimaryAction}
+                      onClick={() => handlePrimaryAction()}
                     >
                       {isEnrollmentLoading ? (
                         <span className="flex items-center justify-center gap-2">
@@ -417,6 +439,7 @@ export default function CourseDetailPage() {
                     <Button
                       variant="outline"
                       className="w-full h-12 border-slate-200 hover:bg-slate-50 font-bold transition-all"
+                      onClick={() => setIsQuizModalOpen(true)}
                     >
                       Trắc nghiệm
                     </Button>
@@ -449,6 +472,63 @@ export default function CourseDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Quizzes List Modal */}
+      {isQuizModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[80vh] flex flex-col animate-in zoom-in-95 duration-200">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between shrink-0">
+              <h3 className="text-xl font-bold flex items-center gap-2 text-slate-800">
+                <HelpCircle className="text-indigo-600 w-6 h-6" />
+                Bài kiểm tra khóa học
+              </h3>
+              <button
+                onClick={() => setIsQuizModalOpen(false)}
+                className="p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="overflow-y-auto p-5 space-y-4">
+               {isQuizzesLoading ? (
+                 <div className="flex justify-center p-8">
+                   <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+                 </div>
+               ) : publicQuizzes.length > 0 ? (
+                 publicQuizzes.map((quiz) => (
+                   <div key={quiz.id} className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between gap-4">
+                     <div>
+                       <h4 className="font-bold text-slate-800">{quiz.title}</h4>
+                       <p className="text-sm text-slate-500 mt-1 flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5" /> Thời gian: {quiz.timeLimit} giây
+                       </p>
+                     </div>
+                     <Button 
+                       onClick={() => handlePrimaryAction(quiz.id)} 
+                       className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm shrink-0"
+                     >
+                        Vào thi
+                     </Button>
+                   </div>
+                 ))
+               ) : (
+                 <div className="text-center py-10 px-4">
+                   <div className="bg-slate-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                     <HelpCircle className="w-8 h-8 text-slate-400" />
+                   </div>
+                   <h4 className="text-lg font-bold text-slate-700">Chưa có bài thi</h4>
+                   <p className="text-slate-500 text-sm mt-1">Khóa học này hiện tại chưa có bài kiểm tra nào.</p>
+                 </div>
+               )}
+            </div>
+
+            <div className="p-4 border-t border-slate-100 flex justify-end shrink-0 bg-slate-50 rounded-b-xl px-5">
+              <Button onClick={() => setIsQuizModalOpen(false)} variant="outline" className="border-slate-300">Đóng lại</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,7 +3,7 @@ package com.example.WebHocTap.controller;
 import com.example.WebHocTap.dto.ApiResponse;
 import com.example.WebHocTap.dto.LiveSessionDTO;
 import com.example.WebHocTap.dto.LiveSessionJoinResponse;
-import com.example.WebHocTap.model.CreateLiveSessionRequest;
+import com.example.WebHocTap.dto.request.CreateLiveSessionRequest;
 import com.example.WebHocTap.service.LiveSessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -52,7 +52,7 @@ public class LiveSessionController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN', 'STUDENT')")
     public ResponseEntity<ApiResponse<List<LiveSessionDTO>>> getAllSessions(
             @RequestParam(name = "status", required = false) String status) {
         return ResponseEntity.ok(ApiResponse.ok(liveSessionService.getAllSessions(status)));

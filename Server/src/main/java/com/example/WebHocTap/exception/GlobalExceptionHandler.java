@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -40,6 +42,9 @@ public class GlobalExceptionHandler {
                 break;
             case FORBIDDEN:
                 status = HttpStatus.FORBIDDEN;
+                break;
+            case TOO_MANY_REQUESTS:
+                status = HttpStatus.TOO_MANY_REQUESTS;
                 break;
             default:
                 status = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -79,8 +84,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
+    @ExceptionHandler({MissingServletRequestParameterException.class, MissingServletRequestPartException.class})
+    public ResponseEntity<Map<String, Object>> handleMissingParameter(Exception ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("code", ErrorCode.BAD_REQUEST.getCode());
+        body.put("message", "Thiếu file hoặc dữ liệu yêu cầu: " + ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
+        ex.printStackTrace(); // In ra console server để debug
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("code", ErrorCode.UNKNOWN_ERROR.getCode());

@@ -1,7 +1,6 @@
 import { Outlet, Navigate } from "react-router-dom"
 import { InstructorSidebar } from "@/components/instructor/InstructorSidebar"
 import { InstructorHeader } from "@/components/instructor/InstructorHeader"
-import { Footer } from "@/components"
 import { useAuth } from "@/hooks"
 
 export function InstructorLayout() {
@@ -40,7 +39,6 @@ export function InstructorLayout() {
         <InstructorHeader />
         <main className="flex-1 overflow-y-auto">
           <Outlet />
-          <Footer />
         </main>
       </div>
     </div>

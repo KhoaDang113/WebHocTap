@@ -81,9 +81,9 @@ export function InstructorDashboardPage() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900">
+    <div className="container mx-auto px-4 py-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-slate-900">
           Dashboard Giảng viên
         </h1>
         <p className="text-slate-500 mt-2">
@@ -117,15 +117,15 @@ export function InstructorDashboardPage() {
 
       {/* Students List */}
       <h2 className="text-xl font-bold text-slate-900 mb-4">
-        Học viên mới nhất ({students.length})
+        Học viên của bạn ({students.length})
       </h2>
       <Card className="border-slate-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="bg-slate-50 border-b border-slate-100 text-slate-500">
               <tr>
-                <th className="px-6 py-4 font-medium">Học viên</th>
-                <th className="px-6 py-4 font-medium">Khóa học</th>
+                <th className="px-4 py-3 font-medium">Học viên</th>
+                <th className="px-4 py-3 font-medium">Khóa học</th>
                 <th className="px-6 py-4 font-medium whitespace-nowrap">
                   Ngày đăng ký
                 </th>
